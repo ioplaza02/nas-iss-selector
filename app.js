@@ -74,12 +74,19 @@
 
   let allProducts = [];
   let currentProduct = null;
+  let dataLoaded = false;
 
   fetch("data/iss-services.json")
     .then((res) => res.json())
     .then((data) => {
       allProducts = data.products || [];
+      dataLoaded = true;
       renderUpdatedAt(data.updatedAt);
+      // データの読み込みが完了する前に型番を入力し終えているケースがあるため、
+      // 読み込み完了時点で検索欄に文字が残っていれば、あらためて検索し直す。
+      if (modelInput.value.trim()) {
+        modelInput.dispatchEvent(new Event("input"));
+      }
     })
     .catch(() => {
       updatedAtEl.textContent = "データの読み込みに失敗しました。時間をおいて再度お試しください。";
@@ -112,7 +119,11 @@
     const matches = findMatches(q).slice(0, 8);
     if (matches.length === 0) {
       suggestBox.hidden = true;
-      showNoMatch(q);
+      if (!dataLoaded) {
+        showLoading(q);
+      } else {
+        showNoMatch(q);
+      }
       return;
     }
     suggestBox.innerHTML = "";
@@ -147,6 +158,18 @@
     currentProduct = null;
     emptyState.hidden = false;
     resultWrap.hidden = true;
+  }
+
+  function showLoading(query) {
+    currentProduct = null;
+    emptyState.hidden = true;
+    resultWrap.hidden = false;
+    resultModel.textContent = query;
+    resultCount.textContent = "";
+    planGroups.innerHTML = `
+      <div class="no-match">
+        データを読み込んでいます。少しお待ちください…（サイズが大きいため、初回は数秒かかることがあります）
+      </div>`;
   }
 
   function showNoMatch(query) {
