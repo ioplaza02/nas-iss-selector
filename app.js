@@ -1,6 +1,47 @@
 (() => {
   "use strict";
 
+  const SITE_PASSWORD = "iss2026";
+  const STORAGE_KEY = "iss-selector-auth";
+
+  const gate = document.getElementById("password-gate");
+  const appRoot = document.getElementById("app-root");
+  const form = document.getElementById("password-form");
+  const input = document.getElementById("password-input");
+  const toggle = document.getElementById("password-toggle");
+  const errorMsg = document.getElementById("password-error");
+
+  function unlock() {
+    gate.hidden = true;
+    appRoot.hidden = false;
+    initApp();
+  }
+
+  if (localStorage.getItem(STORAGE_KEY) === "1") {
+    unlock();
+  } else {
+    input.focus();
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (input.value === SITE_PASSWORD) {
+      localStorage.setItem(STORAGE_KEY, "1");
+      errorMsg.hidden = true;
+      unlock();
+    } else {
+      errorMsg.hidden = false;
+    }
+  });
+
+  toggle.addEventListener("click", () => {
+    input.type = input.type === "password" ? "text" : "password";
+  });
+
+  // ---------- ここから先はパスワード認証後に実行する本体ロジック ----------
+
+  function initApp() {
+
   const METHOD_INFO = {
     onsite: {
       title: "訪問安心保守",
@@ -260,4 +301,6 @@
     }[c]));
   }
   function escapeAttr(str) { return escapeHtml(str); }
+
+  } // ← initApp() の終わり
 })();
