@@ -30,31 +30,31 @@ body {
 .hero {
   background: var(--ink);
   color: #fff;
-  padding: 56px 24px 44px;
+  padding: 24px 24px 28px;
 }
 .hero__inner {
-  max-width: 640px;
+  max-width: 480px;
   margin: 0 auto;
   text-align: center;
 }
 .hero__eyebrow {
-  margin: 0 0 10px;
-  font-size: 13px;
+  margin: 0 0 4px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.06em;
 }
 .hero__title {
-  margin: 0 0 14px;
-  font-size: 40px;
+  margin: 0 0 6px;
+  font-size: 24px;
   font-weight: 900;
   letter-spacing: 0.01em;
 }
 .hero__lead {
-  margin: 0 0 28px;
-  font-size: 15px;
+  margin: 0 0 16px;
+  font-size: 13px;
   color: #cfd3d6;
-  max-width: 480px;
+  max-width: 420px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -62,9 +62,9 @@ body {
 .search { position: relative; }
 .search__input {
   width: 100%;
-  font-size: 17px;
+  font-size: 14px;
   font-family: inherit;
-  padding: 16px 20px;
+  padding: 11px 16px;
   border-radius: 999px;
   border: 2px solid transparent;
   outline: none;
@@ -101,8 +101,8 @@ body {
 .search__suggest button:hover { background: var(--accent-bg); }
 
 .hero__hint {
-  margin: 16px 0 0;
-  font-size: 12px;
+  margin: 10px 0 0;
+  font-size: 11px;
   color: #9ba0a3;
 }
 
