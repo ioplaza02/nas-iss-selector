@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISSセレクター（試作）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero__inner">
+    <p class="hero__eyebrow">I-O DATA NAS 有償保守サービス</p>
+    <h1 class="hero__title">ISSセレクター</h1>
+    <p class="hero__lead">
+      お使い（またはご検討中）のNASの型番を入れると、加入できる保守プランと価格がすぐにわかります。
+    </p>
+
+    <div class="search">
+      <input
+        type="text"
+        id="model-input"
+        class="search__input"
+        placeholder="型番を入力（例：HDL4-Z25SI3BB、HDL4-LX04）"
+        autocomplete="off"
+      >
+      <div class="search__suggest" id="model-suggest" hidden></div>
+    </div>
+    <p class="hero__hint">型番がわからない場合は、下の条件から絞り込んでも探せます。</p>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="filter-panel" aria-label="絞り込み条件">
+    <div class="filter-group">
+      <p class="filter-group__label">保守の方式</p>
+      <label class="filter-option">
+        <input type="checkbox" name="method" value="onsite" checked>
+        <span>訪問安心保守（スタッフが訪問・交換）</span>
+      </label>
+      <label class="filter-option">
+        <input type="checkbox" name="method" value="onsite_sameday" checked>
+        <span>当日訪問プレミアム</span>
+      </label>
+      <label class="filter-option">
+        <input type="checkbox" name="method" value="delivery" checked>
+        <span>交換品お届け保守（自分で交換）</span>
+      </label>
+      <label class="filter-option">
+        <input type="checkbox" name="method" value="sendback" checked>
+        <span>保証期間延長（郵送修理）</span>
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <p class="filter-group__label">HDDの返却</p>
+      <label class="filter-option">
+        <input type="radio" name="hdd-return" value="any" checked>
+        <span>指定なし</span>
+      </label>
+      <label class="filter-option">
+        <input type="radio" name="hdd-return" value="not-required">
+        <span>返却したくない（社外に出せない）</span>
+      </label>
+      <label class="filter-option">
+        <input type="radio" name="hdd-return" value="required">
+        <span>返却してもよい（費用を抑えたい）</span>
+      </label>
+    </div>
+
+    <div class="filter-group">
+      <p class="filter-group__label">加入形態</p>
+      <label class="filter-option">
+        <input type="checkbox" id="hide-extension">
+        <span>延長パック（既存加入者専用）を隠す</span>
+      </label>
+      <label class="filter-option">
+        <input type="checkbox" id="hide-option">
+        <span>オプション単体を隠す</span>
+      </label>
+    </div>
+
+    <button class="filter-reset" id="filter-reset" type="button">絞り込みを解除する</button>
+  </aside>
+
+  <section class="result-area">
+    <div id="empty-state" class="empty-state">
+      <p class="empty-state__title">型番を入力してください</p>
+      <p class="empty-state__body">
+        上の検索欄にNASの型番（一部でも可）を入れると、対応する保守プランの候補が表示されます。
+      </p>
+    </div>
+
+    <div id="result-wrap" hidden>
+      <div class="result-head">
+        <h2 id="result-model"></h2>
+        <p id="result-count" class="result-count"></p>
+      </div>
+      <div id="plan-groups"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="info-footer">
+  <div class="info-footer__inner">
+    <div class="info-footer__block">
+      <p class="info-footer__title">こんなケースは対象外です</p>
+      <ul class="info-footer__list">
+        <li>すでにNASを購入して61日以上経っており、まだ保守に入っていない
+          → <a href="https://www.iodata.jp/support/service/iss/maintenance/nas/after.htm" target="_blank" rel="noopener">アフター保守を確認する</a>
+        </li>
+        <li>購入したNASの設置・初期設定を代行してほしい
+          → <a href="https://www.iodata.jp/support/service/iss/service/set/index.htm" target="_blank" rel="noopener">初回設置サービスを確認する</a>
+        </li>
+      </ul>
+    </div>
+    <p class="info-footer__updated" id="updated-at"></p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
