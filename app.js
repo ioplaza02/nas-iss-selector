@@ -42,6 +42,42 @@
 
   function initApp() {
 
+  const ICONS = {
+    onsite: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="27" cy="8" r="4"/>
+      <path d="M27 12 L20 23 L29 27 L25 40"/>
+      <path d="M20 23 L11 27"/>
+      <path d="M29 27 L40 22"/>
+      <path d="M25 40 L16 45"/>
+      <path d="M25 40 L34 44"/>
+    </svg>`,
+    onsite_sameday: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="18" cy="8" r="4"/>
+      <path d="M18 12 L11 22 L19 26 L15 38"/>
+      <path d="M11 22 L3 26"/>
+      <path d="M19 26 L29 22"/>
+      <path d="M15 38 L7 44"/>
+      <path d="M15 38 L23 43"/>
+      <path d="M40 8 L33 21 L39 21 L32 34"/>
+    </svg>`,
+    delivery: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="19" width="19" height="13" rx="1"/>
+      <path d="M22 24 H31 L38 30 V32 H22 Z"/>
+      <circle cx="11" cy="34" r="3"/>
+      <circle cx="32" cy="34" r="3"/>
+      <path d="M41 26 H45"/>
+      <path d="M40 21 H44"/>
+    </svg>`,
+    sendback: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="12" y="19" width="21" height="21" rx="1"/>
+      <path d="M12 26 H33"/>
+      <path d="M22.5 19 V40"/>
+      <path d="M38 15 A12 12 0 1 1 27 7"/>
+      <path d="M38 15 V8"/>
+      <path d="M38 15 H31"/>
+    </svg>`
+  };
+
   const METHOD_INFO = {
     onsite: {
       title: "訪問安心保守",
@@ -257,11 +293,11 @@
       const items = groups[methodKey];
       if (!items || items.length === 0) return;
       const info = METHOD_INFO[methodKey];
-      html += renderGroup(info.title, info.desc, items);
+      html += renderGroup(info.title, info.desc, items, ICONS[methodKey]);
     });
 
     if (groups.option && groups.option.length > 0) {
-      html += renderGroup("追加オプション", "既存の保守プランに追加できるオプションです", groups.option);
+      html += renderGroup("追加オプション", "既存の保守プランに追加できるオプションです", groups.option, ICONS.delivery);
     }
 
     planGroups.innerHTML = html;
@@ -277,12 +313,21 @@
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(s);
     });
-    return Array.from(map.values()).map((variants) =>
+    const cards = Array.from(map.values()).map((variants) =>
       [...variants].sort((a, b) => (a.years || 0) - (b.years || 0))
     );
+    // カテゴリをまたいで見比べやすいよう、常に「HDD返却不要タイプ」を先頭、
+    // 「HDD返却あり」を次、それ以外（該当しないもの）を最後、の順に固定する
+    const rank = (hddReturnRequired) => {
+      if (hddReturnRequired === false) return 0;
+      if (hddReturnRequired === true) return 1;
+      return 2;
+    };
+    cards.sort((a, b) => rank(a[0].hddReturnRequired) - rank(b[0].hddReturnRequired));
+    return cards;
   }
 
-  function renderGroup(title, desc, items) {
+  function renderGroup(title, desc, items, icon) {
     const cards = groupIntoCards(items);
     const cardsHtml = cards.map((variants) => {
       const id = `plan-card-${cardCounter++}`;
@@ -292,7 +337,7 @@
     return `
       <div class="plan-group">
         <div class="plan-group__header">
-          <span class="plan-group__bar"></span>
+          <span class="plan-group__icon">${icon || ""}</span>
           <div>
             <p class="plan-group__title">${escapeHtml(title)}</p>
             <p class="plan-group__desc">${escapeHtml(desc)}</p>
