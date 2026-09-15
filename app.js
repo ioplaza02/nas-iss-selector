@@ -209,6 +209,9 @@
 
   // ---------- 結果表示 ----------
 
+  let cardVariantMap = {};
+  let cardCounter = 0;
+
   function renderResults() {
     emptyState.hidden = true;
     resultWrap.hidden = false;
@@ -246,6 +249,8 @@
       groups[key].push(s);
     });
 
+    cardVariantMap = {};
+    cardCounter = 0;
     let html = "";
 
     order.forEach((methodKey) => {
@@ -260,12 +265,30 @@
     }
 
     planGroups.innerHTML = html;
+    bindCardEvents();
+  }
+
+  // 同じプラン（サービス名・方式・HDD返却要否などが同じ）で年数だけが違うものを
+  // 1枚のカードにまとめる。年数はカード内のボタンで切り替えられるようにする。
+  function groupIntoCards(items) {
+    const map = new Map();
+    items.forEach((s) => {
+      const key = [s.method, s.hddReturnRequired, s.isExtension, s.isOption, s.name].join("|");
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(s);
+    });
+    return Array.from(map.values()).map((variants) =>
+      [...variants].sort((a, b) => (a.years || 0) - (b.years || 0))
+    );
   }
 
   function renderGroup(title, desc, items) {
-    // 年数の短い順に並べる
-    const sorted = [...items].sort((a, b) => (a.years || 0) - (b.years || 0));
-    const rows = sorted.map(renderRow).join("");
+    const cards = groupIntoCards(items);
+    const cardsHtml = cards.map((variants) => {
+      const id = `plan-card-${cardCounter++}`;
+      cardVariantMap[id] = variants;
+      return renderCard(id, variants);
+    }).join("");
     return `
       <div class="plan-group">
         <div class="plan-group__header">
@@ -275,47 +298,80 @@
             <p class="plan-group__desc">${escapeHtml(desc)}</p>
           </div>
         </div>
-        ${rows}
+        <div class="plan-group__cards">${cardsHtml}</div>
       </div>`;
   }
 
-  function renderRow(s) {
-    const rowClass = s.isExtension ? "plan-row--extension" : s.isOption ? "plan-row--option" : "";
-    const years = s.years ? `${s.years}年` + (s.months ? `${s.months}ヶ月` : "") : "";
+  function formatYears(s) {
+    return s.years ? `${s.years}年` + (s.months ? `${s.months}ヶ月` : "") : "期間不明";
+  }
 
+  function buildBadges(s) {
     const badges = [];
     if (s.hddReturnRequired === false) badges.push(`<span class="badge badge--accent">HDD返却不要</span>`);
     if (s.hddReturnRequired === true) badges.push(`<span class="badge">HDD返却あり</span>`);
     if (s.isExtension) badges.push(`<span class="badge">延長パック（既存加入者専用）</span>`);
     if (s.isOption) badges.push(`<span class="badge badge--good">オプション</span>`);
-    if (years) badges.push(`<span class="badge">${escapeHtml(years)}</span>`);
     if (s.serviceStart) {
       const d = new Date(s.serviceStart);
       if (!isNaN(d) && d.getTime() > Date.now()) {
         badges.push(`<span class="badge">${d.getFullYear()}年${d.getMonth() + 1}月以降販売分のみ</span>`);
       }
     }
+    return badges.join("");
+  }
 
-    const priceText = s.priceExclTax
+  function priceText(s) {
+    return s.priceExclTax
       ? `¥${s.priceExclTax.toLocaleString()}`
       : "価格は公式サイトでご確認ください";
+  }
 
-    const nameHtml = s.url
+  function nameHtml(s) {
+    return s.url
       ? `<a href="${escapeAttr(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a>`
       : escapeHtml(s.name);
+  }
+
+  function renderCard(id, variants) {
+    const first = variants[0];
+    const rowClass = first.isExtension ? "plan-row--extension" : first.isOption ? "plan-row--option" : "";
+
+    const yearButtons = variants.map((v, i) => `
+      <button type="button" class="year-btn ${i === 0 ? "year-btn--selected" : ""}" data-index="${i}">
+        ${escapeHtml(formatYears(v))}
+      </button>`).join("");
 
     return `
-      <div class="plan-row ${rowClass}">
-        <div class="plan-row__main">
-          <p class="plan-row__code">${escapeHtml(s.code)}</p>
-          <p class="plan-row__name">${nameHtml}</p>
-          <div class="plan-row__badges">${badges.join("")}</div>
-        </div>
+      <div class="plan-row ${rowClass}" id="${id}">
+        <p class="plan-row__code" data-role="code">${escapeHtml(first.code)}</p>
+        <p class="plan-row__name" data-role="name">${nameHtml(first)}</p>
+        <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
+        <div class="year-btn-row">${yearButtons}</div>
         <div class="plan-row__price">
-          <p class="plan-row__price-value">${priceText}</p>
+          <p class="plan-row__price-value" data-role="price">${priceText(first)}</p>
           <p class="plan-row__price-note">税抜</p>
         </div>
       </div>`;
+  }
+
+  function bindCardEvents() {
+    Object.entries(cardVariantMap).forEach(([id, variants]) => {
+      const cardEl = document.getElementById(id);
+      if (!cardEl) return;
+      const buttons = cardEl.querySelectorAll(".year-btn");
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          buttons.forEach((b) => b.classList.remove("year-btn--selected"));
+          btn.classList.add("year-btn--selected");
+          const v = variants[Number(btn.dataset.index)];
+          cardEl.querySelector('[data-role="code"]').textContent = v.code;
+          cardEl.querySelector('[data-role="name"]').innerHTML = nameHtml(v);
+          cardEl.querySelector('[data-role="price"]').textContent = priceText(v);
+          cardEl.querySelector('[data-role="badges"]').innerHTML = buildBadges(v);
+        });
+      });
+    });
   }
 
   function escapeHtml(str) {
