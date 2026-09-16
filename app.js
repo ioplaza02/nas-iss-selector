@@ -454,7 +454,6 @@
     return `
       <div class="plan-subgroup">
         ${subTitle ? `<p class="plan-subgroup__title">${escapeHtml(subTitle)}</p>` : ""}
-        ${flowSteps ? renderFlow(flowSteps) : ""}
         <div class="plan-group__cards">${cardsHtml}</div>
       </div>`;
   }

@@ -27,39 +27,45 @@ body {
 
 /* ---------- Hero ---------- */
 
-.hero {
+.brand-banner {
   background: var(--ink);
   color: #fff;
-  padding: 24px 24px 28px;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
-.hero__inner {
-  max-width: 480px;
-  margin: 0 auto;
-  text-align: center;
-}
-.hero__eyebrow {
-  margin: 0 0 4px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.06em;
-}
-.hero__title {
-  margin: 0 0 6px;
-  font-size: 24px;
+.brand-banner__badge {
+  font-size: 20px;
   font-weight: 900;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
-.hero__lead {
-  margin: 0 0 16px;
-  font-size: 13px;
+.brand-banner__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.brand-banner__logo { height: 26px; width: auto; display: block; }
+.brand-banner__lead {
+  margin: 0;
+  font-size: 12px;
   color: #cfd3d6;
-  max-width: 420px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 360px;
+  text-align: right;
 }
 
-.search { position: relative; }
+.search-section {
+  background: var(--ink);
+  padding: 0 24px 20px;
+  text-align: center;
+}
+
+.search { position: relative; max-width: 480px; margin: 0 auto; }
 .search__input {
   width: 100%;
   font-size: 14px;
@@ -113,6 +119,7 @@ body {
   margin: 10px 0 0;
   font-size: 11px;
   color: #9ba0a3;
+  text-align: center;
 }
 
 /* ---------- Layout ---------- */
@@ -205,13 +212,13 @@ body {
 }
 .plan-group__bar { width: 4px; height: 18px; border-radius: 2px; background: var(--accent); flex-shrink: 0; }
 .plan-group__icon {
-  width: 34px;
-  height: 34px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
   color: var(--accent);
   background: var(--accent-bg);
-  border-radius: 8px;
-  padding: 6px;
+  border-radius: 10px;
+  padding: 4px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -358,7 +365,9 @@ body {
 @media (max-width: 720px) {
   .layout { grid-template-columns: 1fr; }
   .filter-panel { position: static; }
-  .hero__title { font-size: 30px; }
+  .brand-banner { flex-direction: column; align-items: flex-start; }
+  .brand-banner__right { justify-content: flex-start; text-align: left; }
+  .brand-banner__lead { text-align: left; }
 }
 
 /* ---------- Password gate ---------- */

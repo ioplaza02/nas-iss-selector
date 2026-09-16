@@ -26,27 +26,27 @@
 
 <div id="app-root" hidden>
 
-<header class="hero">
-  <div class="hero__inner">
-    <p class="hero__eyebrow">I-O DATA NAS 有償保守サービス</p>
-    <h1 class="hero__title">ISSセレクター</h1>
-    <p class="hero__lead">
-      お使い（またはご検討中）のNASの型番を入れると、加入できる保守プランと価格がすぐにわかります。
-    </p>
-
-    <div class="search">
-      <input
-        type="text"
-        id="model-input"
-        class="search__input"
-        placeholder="型番の一部でOK（例：HDL4-LX、Z25SI3BB）"
-        autocomplete="off"
-      >
-      <div class="search__suggest" id="model-suggest" hidden></div>
-    </div>
-    <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。シリーズ名の一部を入れれば候補が絞り込まれます。</p>
+<header class="brand-banner">
+  <span class="brand-banner__badge">ISSセレクター</span>
+  <div class="brand-banner__right">
+    <img src="landisk-logo.png" alt="LAN DISK" class="brand-banner__logo">
+    <p class="brand-banner__lead">お使い（またはご検討中）のNASの型番を入れると、加入できる保守プランと価格がすぐにわかります。</p>
   </div>
 </header>
+
+<div class="search-section">
+  <div class="search">
+    <input
+      type="text"
+      id="model-input"
+      class="search__input"
+      placeholder="型番の一部でOK（例：HDL4-LX、Z25SI3BB）"
+      autocomplete="off"
+    >
+    <div class="search__suggest" id="model-suggest" hidden></div>
+  </div>
+  <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。シリーズ名の一部を入れれば候補が絞り込まれます。</p>
+</div>
 
 <main class="layout">
   <aside class="filter-panel" aria-label="絞り込み条件">
