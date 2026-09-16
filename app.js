@@ -43,15 +43,7 @@
   function initApp() {
 
   const ICONS = {
-    onsite: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="27" cy="8" r="4"/>
-      <path d="M27 12 L20 23 L29 27 L25 40"/>
-      <path d="M20 23 L11 27"/>
-      <path d="M25 40 L16 45"/>
-      <path d="M25 40 L34 44"/>
-      <rect x="31" y="21" width="11" height="9" rx="1.5"/>
-      <path d="M34.5 21 V19 H38.5 V21"/>
-    </svg>`,
+    onsite: `<img src="images/on_image.png" alt="訪問安心保守（オンサイト）">`,
     onsite_sameday: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="16" cy="8" r="4"/>
       <path d="M16 12 L9 22 L17 26 L13 38"/>
@@ -62,14 +54,7 @@
       <path d="M23 20 V18 H27 V20"/>
       <path d="M42 8 L35 21 L41 21 L34 34"/>
     </svg>`,
-    delivery: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="19" width="19" height="13" rx="1"/>
-      <path d="M22 24 H31 L38 30 V32 H22 Z"/>
-      <circle cx="11" cy="34" r="3"/>
-      <circle cx="32" cy="34" r="3"/>
-      <path d="M41 26 H45"/>
-      <path d="M40 21 H44"/>
-    </svg>`,
+    delivery: `<img src="images/de_image.png" alt="交換品お届け保守（デリバリィ）">`,
     sendback: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <rect x="12" y="19" width="21" height="21" rx="1"/>
       <path d="M12 26 H33"/>
@@ -149,6 +134,7 @@
   let allProducts = [];
   let currentProduct = null;
   let dataLoaded = false;
+  let highlightedIndex = -1;
 
   fetch("data/iss-services.json")
     .then((res) => res.json())
@@ -202,6 +188,7 @@
       return;
     }
     suggestBox.innerHTML = "";
+    highlightedIndex = -1;
     matches.forEach((p) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -225,6 +212,38 @@
     const exact = allProducts.find((p) => p.model.toUpperCase() === q.toUpperCase());
     if (exact) selectProduct(exact);
   });
+
+  // 矢印キー（↑↓）で候補を選び、Enterで確定できるようにする
+  modelInput.addEventListener("keydown", (e) => {
+    if (suggestBox.hidden) return;
+    const buttons = Array.from(suggestBox.querySelectorAll("button"));
+    if (buttons.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      highlightedIndex = (highlightedIndex + 1) % buttons.length;
+      updateHighlight(buttons);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      highlightedIndex = (highlightedIndex - 1 + buttons.length) % buttons.length;
+      updateHighlight(buttons);
+    } else if (e.key === "Enter") {
+      if (highlightedIndex >= 0 && highlightedIndex < buttons.length) {
+        e.preventDefault();
+        buttons[highlightedIndex].click();
+      }
+    } else if (e.key === "Escape") {
+      suggestBox.hidden = true;
+    }
+  });
+
+  function updateHighlight(buttons) {
+    buttons.forEach((btn, i) => {
+      btn.classList.toggle("search__suggest-btn--active", i === highlightedIndex);
+    });
+    const active = buttons[highlightedIndex];
+    if (active) active.scrollIntoView({ block: "nearest" });
+  }
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".search")) suggestBox.hidden = true;
