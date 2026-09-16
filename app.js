@@ -47,18 +47,20 @@
       <circle cx="27" cy="8" r="4"/>
       <path d="M27 12 L20 23 L29 27 L25 40"/>
       <path d="M20 23 L11 27"/>
-      <path d="M29 27 L40 22"/>
       <path d="M25 40 L16 45"/>
       <path d="M25 40 L34 44"/>
+      <rect x="31" y="21" width="11" height="9" rx="1.5"/>
+      <path d="M34.5 21 V19 H38.5 V21"/>
     </svg>`,
     onsite_sameday: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="18" cy="8" r="4"/>
-      <path d="M18 12 L11 22 L19 26 L15 38"/>
-      <path d="M11 22 L3 26"/>
-      <path d="M19 26 L29 22"/>
-      <path d="M15 38 L7 44"/>
-      <path d="M15 38 L23 43"/>
-      <path d="M40 8 L33 21 L39 21 L32 34"/>
+      <circle cx="16" cy="8" r="4"/>
+      <path d="M16 12 L9 22 L17 26 L13 38"/>
+      <path d="M9 22 L1 25"/>
+      <path d="M13 38 L5 44"/>
+      <path d="M13 38 L21 43"/>
+      <rect x="20" y="20" width="10" height="8" rx="1.5"/>
+      <path d="M23 20 V18 H27 V20"/>
+      <path d="M42 8 L35 21 L41 21 L34 34"/>
     </svg>`,
     delivery: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
       <rect x="3" y="19" width="19" height="13" rx="1"/>
@@ -135,15 +137,15 @@
 
   const METHOD_INFO = {
     onsite: {
-      title: "訪問安心保守",
+      title: "訪問安心保守（オンサイト）",
       desc: "スタッフが訪問し、交換・復旧作業まで行います（自分で作業できない方向け）"
     },
     onsite_sameday: {
-      title: "当日訪問プレミアム",
-      desc: "対応エリア内で、故障当日中の訪問に対応する上位プランです"
+      title: "当日訪問プラン（オンサイト）",
+      desc: "訪問安心保守の中の上位プラン。対応エリア内で、故障当日中の訪問に対応します"
     },
     delivery: {
-      title: "交換品お届け保守",
+      title: "交換品お届け保守（デリバリィ）",
       desc: "交換品が先に届き、ご自身で交換作業を行います（コストを抑えたい方向け）"
     },
     sendback: {
@@ -207,7 +209,8 @@
       showEmptyState();
       return;
     }
-    const matches = findMatches(q).slice(0, 8);
+    const allMatches = findMatches(q);
+    const matches = allMatches.slice(0, 30);
     if (matches.length === 0) {
       suggestBox.hidden = true;
       if (!dataLoaded) {
@@ -229,6 +232,12 @@
       });
       suggestBox.appendChild(btn);
     });
+    if (allMatches.length > matches.length) {
+      const note = document.createElement("p");
+      note.className = "search__suggest-note";
+      note.textContent = `ほか${allMatches.length - matches.length}件。もう少し文字を入れると絞り込めます`;
+      suggestBox.appendChild(note);
+    }
     suggestBox.hidden = false;
 
     // 完全一致が1件だけなら、それを即座に表示する

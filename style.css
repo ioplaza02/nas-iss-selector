@@ -79,7 +79,8 @@ body {
   right: 12px;
   background: #fff;
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 320px;
   box-shadow: 0 12px 24px rgba(0,0,0,0.25);
   text-align: left;
   z-index: 20;
@@ -99,6 +100,13 @@ body {
 }
 .search__suggest button:last-child { border-bottom: none; }
 .search__suggest button:hover { background: var(--accent-bg); }
+.search__suggest-note {
+  margin: 0;
+  padding: 8px 18px;
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--paper);
+}
 
 .hero__hint {
   margin: 10px 0 0;
