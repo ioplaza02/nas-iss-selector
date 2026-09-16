@@ -218,6 +218,22 @@ body {
 .plan-group__desc { margin: 2px 0 0; font-size: 11px; color: var(--text-faint); }
 .plan-group__cards { display: flex; flex-direction: column; gap: 10px; }
 
+.plan-subgroup + .plan-subgroup {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--line);
+}
+.plan-subgroup__title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  background: var(--accent-bg);
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
 .flow-strip {
   display: flex;
   align-items: flex-start;

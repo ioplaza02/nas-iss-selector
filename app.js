@@ -135,25 +135,6 @@
     ]
   };
 
-  const METHOD_INFO = {
-    onsite: {
-      title: "訪問安心保守（オンサイト）",
-      desc: "スタッフが訪問し、交換・復旧作業まで行います（自分で作業できない方向け）"
-    },
-    onsite_sameday: {
-      title: "当日訪問プラン（オンサイト）",
-      desc: "訪問安心保守の中の上位プラン。対応エリア内で、故障当日中の訪問に対応します"
-    },
-    delivery: {
-      title: "交換品お届け保守（デリバリィ）",
-      desc: "交換品が先に届き、ご自身で交換作業を行います（コストを抑えたい方向け）"
-    },
-    sendback: {
-      title: "保証期間延長（センドバック）",
-      desc: "故障品を郵送し、修理後に返却してもらう方式の保証延長です"
-    }
-  };
-
   const el = (sel) => document.querySelector(sel);
   const modelInput = el("#model-input");
   const suggestBox = el("#model-suggest");
@@ -312,6 +293,37 @@
   let cardVariantMap = {};
   let cardCounter = 0;
 
+  // 画面に表示する「大枠」の構成。本家の料金・型番一覧ページと同じ構造で、
+  // 「訪問安心保守（オンサイト）」の中に「ベーシックプラン」「当日訪問プラン」の
+  // 2段階がある、という入れ子構造をそのまま再現する。
+  const TOP_GROUPS = [
+    {
+      icon: ICONS.onsite,
+      title: "訪問安心保守（オンサイト）",
+      desc: "スタッフが訪問し、交換・復旧作業まで行います（自分で作業できない方向け）",
+      subgroups: [
+        { key: "onsite", title: "ベーシックプラン" },
+        { key: "onsite_sameday", title: "当日訪問プラン（上位プラン）" }
+      ]
+    },
+    {
+      icon: ICONS.delivery,
+      title: "交換品お届け保守（デリバリィ）",
+      desc: "交換品が先に届き、ご自身で交換作業を行います（コストを抑えたい方向け）",
+      subgroups: [
+        { key: "delivery", title: null }
+      ]
+    },
+    {
+      icon: ICONS.sendback,
+      title: "保証期間延長（センドバック）",
+      desc: "故障品をお送りいただき、点検・修理後に返送してもらう保証延長サービスです",
+      subgroups: [
+        { key: "sendback", title: null }
+      ]
+    }
+  ];
+
   function renderResults() {
     emptyState.hidden = true;
     resultWrap.hidden = false;
@@ -340,8 +352,7 @@
       return;
     }
 
-    // method順（onsite → onsite_sameday → delivery → sendback）にグループ化
-    const order = ["onsite", "onsite_sameday", "delivery", "sendback"];
+    // method順に一旦フラットに集計する（オプションも別枠として集計）
     const groups = {};
     filtered.forEach((s) => {
       const key = s.isOption ? "option" : s.method;
@@ -353,15 +364,24 @@
     cardCounter = 0;
     let html = "";
 
-    order.forEach((methodKey) => {
-      const items = groups[methodKey];
-      if (!items || items.length === 0) return;
-      const info = METHOD_INFO[methodKey];
-      html += renderGroup(info.title, info.desc, items, ICONS[methodKey], FLOW_STEPS[methodKey]);
+    TOP_GROUPS.forEach((group) => {
+      const subParts = [];
+      group.subgroups.forEach((sub) => {
+        const items = groups[sub.key];
+        if (!items || items.length === 0) return;
+        subParts.push(renderSubgroup(sub.title, items, FLOW_STEPS[sub.key]));
+      });
+      if (subParts.length === 0) return;
+      html += renderTopGroup(group.title, group.desc, group.icon, subParts.join(""));
     });
 
     if (groups.option && groups.option.length > 0) {
-      html += renderGroup("追加オプション", "既存の保守プランに追加できるオプションです", groups.option, ICONS.delivery);
+      html += renderTopGroup(
+        "追加オプション",
+        "既存の保守プランに追加できるオプションです",
+        ICONS.delivery,
+        renderSubgroup(null, groups.option, null)
+      );
     }
 
     planGroups.innerHTML = html;
@@ -391,13 +411,7 @@
     return cards;
   }
 
-  function renderGroup(title, desc, items, icon, flowSteps) {
-    const cards = groupIntoCards(items);
-    const cardsHtml = cards.map((variants) => {
-      const id = `plan-card-${cardCounter++}`;
-      cardVariantMap[id] = variants;
-      return renderCard(id, variants);
-    }).join("");
+  function renderTopGroup(title, desc, icon, subHtml) {
     return `
       <div class="plan-group">
         <div class="plan-group__header">
@@ -407,6 +421,20 @@
             <p class="plan-group__desc">${escapeHtml(desc)}</p>
           </div>
         </div>
+        ${subHtml}
+      </div>`;
+  }
+
+  function renderSubgroup(subTitle, items, flowSteps) {
+    const cards = groupIntoCards(items);
+    const cardsHtml = cards.map((variants) => {
+      const id = `plan-card-${cardCounter++}`;
+      cardVariantMap[id] = variants;
+      return renderCard(id, variants);
+    }).join("");
+    return `
+      <div class="plan-subgroup">
+        ${subTitle ? `<p class="plan-subgroup__title">${escapeHtml(subTitle)}</p>` : ""}
         ${flowSteps ? renderFlow(flowSteps) : ""}
         <div class="plan-group__cards">${cardsHtml}</div>
       </div>`;
