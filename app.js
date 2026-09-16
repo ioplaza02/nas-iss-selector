@@ -78,6 +78,61 @@
     </svg>`
   };
 
+  // 流れ図で使う汎用の小アイコン（故障発生・問い合わせ・確認・完了）
+  const STEP_ICONS = {
+    trouble: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M24 6 L44 40 H4 Z"/>
+      <line x1="24" y1="18" x2="24" y2="27"/>
+      <circle cx="24" cy="33" r="1.3" fill="currentColor" stroke="none"/>
+    </svg>`,
+    inquiry: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="6" y="10" width="36" height="22" rx="4"/>
+      <path d="M16 32 L12 40 L22 32"/>
+      <line x1="14" y1="18" x2="34" y2="18"/>
+      <line x1="14" y1="24" x2="28" y2="24"/>
+    </svg>`,
+    confirm: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="12" y="6" width="24" height="34" rx="2"/>
+      <path d="M18 6 V4 H30 V6"/>
+      <path d="M17 22 L22 27 L32 15"/>
+    </svg>`,
+    complete: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="24" r="18"/>
+      <path d="M15 24 L21 30 L33 17"/>
+    </svg>`
+  };
+
+  // カテゴリごとの「故障発生 → 解決」の流れ図
+  const FLOW_STEPS = {
+    onsite: [
+      { icon: STEP_ICONS.trouble, label: "故障・不調" },
+      { icon: STEP_ICONS.inquiry, label: "問い合わせ" },
+      { icon: STEP_ICONS.confirm, label: "不具合確認" },
+      { icon: ICONS.onsite, label: "スタッフ訪問・交換" },
+      { icon: STEP_ICONS.complete, label: "業務再開" }
+    ],
+    onsite_sameday: [
+      { icon: STEP_ICONS.trouble, label: "故障・不調" },
+      { icon: STEP_ICONS.inquiry, label: "問い合わせ" },
+      { icon: STEP_ICONS.confirm, label: "不具合確認" },
+      { icon: ICONS.onsite_sameday, label: "当日訪問・交換" },
+      { icon: STEP_ICONS.complete, label: "業務再開" }
+    ],
+    delivery: [
+      { icon: STEP_ICONS.trouble, label: "故障・不調" },
+      { icon: STEP_ICONS.inquiry, label: "問い合わせ" },
+      { icon: ICONS.delivery, label: "交換品お届け" },
+      { icon: STEP_ICONS.confirm, label: "お客様で交換" },
+      { icon: STEP_ICONS.complete, label: "業務再開" }
+    ],
+    sendback: [
+      { icon: STEP_ICONS.trouble, label: "故障・不調" },
+      { icon: STEP_ICONS.inquiry, label: "修理を申込み" },
+      { icon: ICONS.sendback, label: "発送・検査修理" },
+      { icon: STEP_ICONS.complete, label: "返却・完了" }
+    ]
+  };
+
   const METHOD_INFO = {
     onsite: {
       title: "訪問安心保守",
@@ -293,7 +348,7 @@
       const items = groups[methodKey];
       if (!items || items.length === 0) return;
       const info = METHOD_INFO[methodKey];
-      html += renderGroup(info.title, info.desc, items, ICONS[methodKey]);
+      html += renderGroup(info.title, info.desc, items, ICONS[methodKey], FLOW_STEPS[methodKey]);
     });
 
     if (groups.option && groups.option.length > 0) {
@@ -327,7 +382,7 @@
     return cards;
   }
 
-  function renderGroup(title, desc, items, icon) {
+  function renderGroup(title, desc, items, icon, flowSteps) {
     const cards = groupIntoCards(items);
     const cardsHtml = cards.map((variants) => {
       const id = `plan-card-${cardCounter++}`;
@@ -343,8 +398,22 @@
             <p class="plan-group__desc">${escapeHtml(desc)}</p>
           </div>
         </div>
+        ${flowSteps ? renderFlow(flowSteps) : ""}
         <div class="plan-group__cards">${cardsHtml}</div>
       </div>`;
+  }
+
+  function renderFlow(steps) {
+    const items = steps.map((step, i) => {
+      const arrow = i < steps.length - 1 ? `<span class="flow-arrow">›</span>` : "";
+      return `
+        <div class="flow-step">
+          <span class="flow-step__icon">${step.icon}</span>
+          <p class="flow-step__label">${escapeHtml(step.label)}</p>
+        </div>
+        ${arrow}`;
+    }).join("");
+    return `<div class="flow-strip">${items}</div>`;
   }
 
   function formatYears(s) {
