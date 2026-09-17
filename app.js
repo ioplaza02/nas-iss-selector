@@ -589,7 +589,7 @@
         <div class="year-btn-row">${yearButtons}</div>
         <div class="plan-row__bottom">
           <div class="plan-row__model">
-            <p class="plan-row__model-sku">${escapeHtml(currentProduct.model)}</p>
+            <p class="plan-row__model-sku" data-role="model-sku">${escapeHtml(first.code)}</p>
           </div>
           <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
         </div>
@@ -607,6 +607,7 @@
           btn.classList.add("year-btn--selected");
           const v = variants[Number(btn.dataset.index)];
           cardEl.querySelector('[data-role="code"]').textContent = v.code;
+          cardEl.querySelector('[data-role="model-sku"]').textContent = v.code;
           cardEl.querySelector('[data-role="name"]').innerHTML = nameHtml(v);
           cardEl.querySelector('[data-role="price"]').innerHTML = priceHtml(v);
           cardEl.querySelector('[data-role="badges"]').innerHTML = buildBadges(v);

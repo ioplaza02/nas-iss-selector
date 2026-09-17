@@ -213,10 +213,15 @@ body {
 .share-feedback { font-size: 11px; color: var(--good); }
 
 #plan-groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  align-items: start;
+  column-width: 260px;
+  column-gap: 20px;
+}
+.plan-group {
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .plan-group { min-width: 0; }
