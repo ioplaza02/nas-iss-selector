@@ -382,7 +382,7 @@ body {
   .layout { grid-template-columns: 1fr; }
   .filter-panel { position: static; }
   .brand-banner { flex-direction: column; align-items: flex-start; }
-  .brand-banner__search { max-width: none; width: 100%; }
+  .brand-banner__search { max-width: none; width: 100%; flex: 0 0 auto; }
   .hint-bar { text-align: left; }
 }
 
