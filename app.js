@@ -128,6 +128,8 @@
   const resultModel = el("#result-model");
   const resultCount = el("#result-count");
   const planGroups = el("#plan-groups");
+  const shareBtn = el("#share-btn");
+  const shareFeedback = el("#share-feedback");
   const filterReset = el("#filter-reset");
   const updatedAtEl = el("#updated-at");
 
@@ -135,6 +137,37 @@
   let currentProduct = null;
   let dataLoaded = false;
   let highlightedIndex = -1;
+
+  // ---------- URLパラメータの復元（共有リンク・NASセレクター連携用） ----------
+
+  function applyStateFromUrl() {
+    const params = new URLSearchParams(location.search);
+    const model = params.get("model");
+    if (model) modelInput.value = model;
+
+    const methods = params.get("methods");
+    if (methods) {
+      const list = methods.split(",");
+      filterPanelEl().querySelectorAll('input[name="method"]').forEach((c) => {
+        c.checked = list.includes(c.value);
+      });
+    }
+
+    const hdd = params.get("hdd");
+    if (hdd) {
+      const target = filterPanelEl().querySelector(`input[name="hdd-return"][value="${hdd}"]`);
+      if (target) target.checked = true;
+    }
+
+    if (params.get("hideExt") === "1") el("#hide-extension").checked = true;
+    if (params.get("hideOpt") === "1") el("#hide-option").checked = true;
+  }
+
+  function filterPanelEl() {
+    return document.querySelector(".filter-panel");
+  }
+
+  applyStateFromUrl();
 
   fetch("data/iss-services.json")
     .then((res) => res.json())
@@ -258,12 +291,14 @@
     currentProduct = null;
     emptyState.hidden = false;
     resultWrap.hidden = true;
+    shareBtn.hidden = true;
   }
 
   function showLoading(query) {
     currentProduct = null;
     emptyState.hidden = true;
     resultWrap.hidden = false;
+    shareBtn.hidden = true;
     resultModel.textContent = query;
     resultCount.textContent = "";
     planGroups.innerHTML = `
@@ -276,6 +311,7 @@
     currentProduct = null;
     emptyState.hidden = true;
     resultWrap.hidden = false;
+    shareBtn.hidden = true;
     resultModel.textContent = query;
     resultCount.textContent = "";
     planGroups.innerHTML = `
@@ -306,6 +342,32 @@
     const hideOption = el("#hide-option").checked;
     return { methods, hddReturn, hideExtension, hideOption };
   }
+
+  function buildShareUrl() {
+    if (!currentProduct) return location.href;
+    const { methods, hddReturn, hideExtension, hideOption } = getActiveFilters();
+    const params = new URLSearchParams();
+    params.set("model", currentProduct.model);
+    if (methods.length > 0) params.set("methods", methods.join(","));
+    if (hddReturn !== "any") params.set("hdd", hddReturn);
+    if (hideExtension) params.set("hideExt", "1");
+    if (hideOption) params.set("hideOpt", "1");
+    return `${location.origin}${location.pathname}?${params.toString()}`;
+  }
+
+  shareBtn.addEventListener("click", async () => {
+    const url = buildShareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      // クリップボードAPIが使えない環境向けのフォールバック
+      window.prompt("このURLをコピーしてください", url);
+      return;
+    }
+    shareFeedback.hidden = false;
+    shareFeedback.textContent = "URLをコピーしました";
+    setTimeout(() => { shareFeedback.hidden = true; }, 2500);
+  });
 
   // ---------- 結果表示 ----------
 
@@ -347,6 +409,7 @@
     emptyState.hidden = true;
     resultWrap.hidden = false;
     resultModel.textContent = currentProduct.model;
+    shareBtn.hidden = false;
 
     const { methods, hddReturn, hideExtension, hideOption } = getActiveFilters();
 
@@ -524,7 +587,12 @@
         <p class="plan-row__name" data-role="name">${nameHtml(first)}</p>
         <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
         <div class="year-btn-row">${yearButtons}</div>
-        <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
+        <div class="plan-row__bottom">
+          <div class="plan-row__model">
+            <p class="plan-row__model-sku">${escapeHtml(currentProduct.model)}</p>
+          </div>
+          <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
+        </div>
       </div>`;
   }
 

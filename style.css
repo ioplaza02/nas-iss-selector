@@ -197,6 +197,20 @@ body {
 }
 .result-head h2 { margin: 0; font-size: 20px; font-weight: 900; font-family: ui-monospace, monospace; }
 .result-count { margin: 0; font-size: 13px; color: var(--text-soft); }
+.share-btn {
+  margin-left: auto;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 700;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent-deep);
+  cursor: pointer;
+}
+.share-btn:hover { background: var(--accent-bg); }
+.share-feedback { font-size: 11px; color: var(--good); }
 
 #plan-groups {
   display: grid;
@@ -329,11 +343,23 @@ body {
 }
 .year-btn--selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-deep); font-weight: 700; }
 
-.plan-row__price {
+.plan-row__bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
+.plan-row__model-sku {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.plan-row__price { text-align: right; flex-shrink: 0; }
 .plan-row__price-value { margin: 0; font-size: 18px; font-weight: 900; }
 .plan-row__price-value .plan-row__price-taxlabel {
   margin-left: 6px;
