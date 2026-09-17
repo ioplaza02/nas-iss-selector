@@ -444,18 +444,14 @@
       </div>`;
   }
 
-  function renderSubgroup(subTitle, items, flowSteps) {
+  function renderSubgroup(subTitle, items) {
     const cards = groupIntoCards(items);
     const cardsHtml = cards.map((variants) => {
       const id = `plan-card-${cardCounter++}`;
       cardVariantMap[id] = variants;
-      return renderCard(id, variants);
+      return renderCard(id, variants, subTitle);
     }).join("");
-    return `
-      <div class="plan-subgroup">
-        ${subTitle ? `<p class="plan-subgroup__title">${escapeHtml(subTitle)}</p>` : ""}
-        <div class="plan-group__cards">${cardsHtml}</div>
-      </div>`;
+    return `<div class="plan-group__cards">${cardsHtml}</div>`;
   }
 
   function renderFlow(steps) {
@@ -490,10 +486,20 @@
     return badges.join("");
   }
 
-  function priceText(s) {
-    return s.priceExclTax
-      ? `¥${s.priceExclTax.toLocaleString()}`
-      : "価格は公式サイトでご確認ください";
+  function priceInclTax(s) {
+    if (!s.priceExclTax) return null;
+    // 消費税10%。本家サイトの計算式（税抜×11/10）に合わせる
+    return Math.round((s.priceExclTax * 11) / 10);
+  }
+
+  function priceHtml(s) {
+    if (!s.priceExclTax) {
+      return `<p class="plan-row__price-value">価格は公式サイトでご確認ください</p>`;
+    }
+    const incl = priceInclTax(s);
+    return `
+      <p class="plan-row__price-value">¥${incl.toLocaleString()}<span class="plan-row__price-taxlabel">税込</span></p>
+      <p class="plan-row__price-note">（税抜 ¥${s.priceExclTax.toLocaleString()}）</p>`;
   }
 
   function nameHtml(s) {
@@ -502,7 +508,7 @@
       : escapeHtml(s.name);
   }
 
-  function renderCard(id, variants) {
+  function renderCard(id, variants, subTitle) {
     const first = variants[0];
     const rowClass = first.isExtension ? "plan-row--extension" : first.isOption ? "plan-row--option" : "";
 
@@ -513,14 +519,12 @@
 
     return `
       <div class="plan-row ${rowClass}" id="${id}">
+        ${subTitle ? `<p class="plan-row__subtitle">${escapeHtml(subTitle)}</p>` : ""}
         <p class="plan-row__code" data-role="code">${escapeHtml(first.code)}</p>
         <p class="plan-row__name" data-role="name">${nameHtml(first)}</p>
         <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
         <div class="year-btn-row">${yearButtons}</div>
-        <div class="plan-row__price">
-          <p class="plan-row__price-value" data-role="price">${priceText(first)}</p>
-          <p class="plan-row__price-note">税抜</p>
-        </div>
+        <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
       </div>`;
   }
 
@@ -536,7 +540,7 @@
           const v = variants[Number(btn.dataset.index)];
           cardEl.querySelector('[data-role="code"]').textContent = v.code;
           cardEl.querySelector('[data-role="name"]').innerHTML = nameHtml(v);
-          cardEl.querySelector('[data-role="price"]').textContent = priceText(v);
+          cardEl.querySelector('[data-role="price"]').innerHTML = priceHtml(v);
           cardEl.querySelector('[data-role="badges"]').innerHTML = buildBadges(v);
         });
       });
