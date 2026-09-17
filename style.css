@@ -213,17 +213,11 @@ body {
 .share-feedback { font-size: 11px; color: var(--good); }
 
 #plan-groups {
-  column-width: 260px;
-  column-gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: start;
 }
-.plan-group {
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  display: inline-block;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
 .plan-group { min-width: 0; }
 .plan-group__header {
   display: flex;
@@ -312,13 +306,6 @@ body {
 .plan-row--extension { border-left-color: var(--text-faint); }
 .plan-row--option { border-left-color: var(--good); }
 
-.plan-row__code {
-  margin: 0;
-  font-family: ui-monospace, monospace;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-}
 .plan-row__name { margin: 2px 0 0; font-size: 13px; font-weight: 600; line-height: 1.5; }
 .plan-row__name a { color: inherit; }
 
@@ -360,18 +347,12 @@ body {
 .plan-row__model-sku {
   margin: 0;
   font-family: ui-monospace, monospace;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text);
 }
 .plan-row__price { text-align: right; flex-shrink: 0; }
-.plan-row__price-value { margin: 0; font-size: 18px; font-weight: 900; }
-.plan-row__price-value .plan-row__price-taxlabel {
-  margin-left: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-faint);
-}
+.plan-row__price-value { margin: 0; font-size: 18px; font-weight: 700; }
 .plan-row__price-note { margin: 2px 0 0; font-size: 11px; color: var(--text-faint); }
 
 .no-match {

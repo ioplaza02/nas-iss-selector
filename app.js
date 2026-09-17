@@ -561,7 +561,7 @@
     }
     const incl = priceInclTax(s);
     return `
-      <p class="plan-row__price-value">¥${incl.toLocaleString()}<span class="plan-row__price-taxlabel">税込</span></p>
+      <p class="plan-row__price-value">¥${incl.toLocaleString()}</p>
       <p class="plan-row__price-note">（税抜 ¥${s.priceExclTax.toLocaleString()}）</p>`;
   }
 
@@ -583,7 +583,6 @@
     return `
       <div class="plan-row ${rowClass}" id="${id}">
         ${subTitle ? `<p class="plan-row__subtitle">${escapeHtml(subTitle)}</p>` : ""}
-        <p class="plan-row__code" data-role="code">${escapeHtml(first.code)}</p>
         <p class="plan-row__name" data-role="name">${nameHtml(first)}</p>
         <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
         <div class="year-btn-row">${yearButtons}</div>
@@ -606,7 +605,6 @@
           buttons.forEach((b) => b.classList.remove("year-btn--selected"));
           btn.classList.add("year-btn--selected");
           const v = variants[Number(btn.dataset.index)];
-          cardEl.querySelector('[data-role="code"]').textContent = v.code;
           cardEl.querySelector('[data-role="model-sku"]').textContent = v.code;
           cardEl.querySelector('[data-role="name"]').innerHTML = nameHtml(v);
           cardEl.querySelector('[data-role="price"]').innerHTML = priceHtml(v);
