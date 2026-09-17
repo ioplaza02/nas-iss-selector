@@ -27,24 +27,25 @@
 <div id="app-root" hidden>
 
 <header class="brand-banner">
-  <span class="brand-banner__badge">ISSセレクター</span>
-  <div class="brand-banner__right">
+  <div class="brand-banner__left">
+    <span class="brand-banner__badge">ISSセレクター</span>
     <img src="landisk-logo.png" alt="LAN DISK" class="brand-banner__logo">
-    <p class="brand-banner__lead">お使い（またはご検討中）のNASの型番を入れると、加入できる保守プランと価格がすぐにわかります。</p>
+  </div>
+  <div class="brand-banner__search">
+    <div class="search">
+      <input
+        type="text"
+        id="model-input"
+        class="search__input"
+        placeholder="型番の一部でOK（例：HDL4-LX、Z25SI3BB）"
+        autocomplete="off"
+      >
+      <div class="search__suggest" id="model-suggest" hidden></div>
+    </div>
   </div>
 </header>
 
-<div class="search-section">
-  <div class="search">
-    <input
-      type="text"
-      id="model-input"
-      class="search__input"
-      placeholder="型番の一部でOK（例：HDL4-LX、Z25SI3BB）"
-      autocomplete="off"
-    >
-    <div class="search__suggest" id="model-suggest" hidden></div>
-  </div>
+<div class="hint-bar">
   <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。例えば「LX04」だけでも「HDL4-LX04」が候補に出ます。</p>
 </div>
 
