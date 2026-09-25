@@ -55,6 +55,15 @@ const MAX_QUERY_LENGTH = 14;
 // 2秒間隔なので、3000回でおよそ100分。
 const MAX_TOTAL_REQUESTS = 3000;
 
+// 1回の問い合わせが固まって（応答が返ってこなくて）永遠に待ち続けることがないよう、
+// この時間を超えたら諦めて次に進む。
+const REQUEST_TIMEOUT_MS = 15000;
+
+// 動作確認用の簡易モード。環境変数 ISS_QUICK_TEST=1 を付けて実行すると、
+// 深掘り探索をせず、型番も先頭5件だけ保守サービスを取得して終わる。
+// 通信・パース処理がちゃんと動くかを1分程度で確認できる。
+const QUICK_TEST = process.env.ISS_QUICK_TEST === "1";
+
 let totalRequests = 0;
 
 function sleep(ms) {
@@ -75,7 +84,15 @@ async function callIssApi(params) {
     url.searchParams.set(k, String(v));
   }
 
-  const res = await fetch(url.toString(), { headers: { "User-Agent": USER_AGENT } });
+  let res;
+  try {
+    res = await fetch(url.toString(), {
+      headers: { "User-Agent": USER_AGENT },
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+    });
+  } catch (e) {
+    throw new Error(`通信に失敗（タイムアウトまたはネットワークエラー）: ${e.message}`);
+  }
   if (!res.ok) {
     throw new Error(`ISS API HTTP ${res.status}: ${url}`);
   }
@@ -125,7 +142,7 @@ async function discoverModelNames() {
     try {
       items = await autocomplete(q);
     } catch (e) {
-      console.error(`オートコンプリート失敗（"${q}"）: ${e.message}`);
+      console.error(`  [${totalRequests}] "${q}" -> オートコンプリート失敗: ${e.message}`);
       if (e.message.includes("MAX_TOTAL_REQUESTS")) break;
       await sleep(REQUEST_INTERVAL_MS);
       continue;
@@ -136,8 +153,11 @@ async function discoverModelNames() {
       found.set(item.name.toUpperCase(), item.name);
     }
 
+    // 1回ごとに進捗を出す。「動いているか固まっているか分からない」を防ぐため。
+    console.log(`  [${totalRequests}回目] "${q}" -> ${items.length}件（累計発見: ${found.size}件 / 残りキュー: ${queue.length}件）`);
+
     // 候補が多い＝まだ絞り込み不足の可能性が高いので、次の1文字を足して深掘りする
-    if (items.length >= RESULT_EXPAND_THRESHOLD && q.length < MAX_QUERY_LENGTH) {
+    if (!QUICK_TEST && items.length >= RESULT_EXPAND_THRESHOLD && q.length < MAX_QUERY_LENGTH) {
       for (const ch of EXPAND_CHARS) {
         queue.push(q + ch);
       }
@@ -222,8 +242,16 @@ function normalizeService(raw) {
 // ---------- メイン処理 ----------
 
 async function main() {
-  console.log("型番の探索を開始します…");
-  const modelNames = await discoverModelNames();
+  if (QUICK_TEST) {
+    console.log("=== 簡易動作確認モード（ISS_QUICK_TEST=1）で実行します ===");
+  }
+  console.log("型番の探索を開始します…（1回ごとに進捗を表示します）");
+  let modelNames = await discoverModelNames();
+
+  if (QUICK_TEST) {
+    modelNames = modelNames.slice(0, 5);
+    console.log(`簡易モードのため、先頭${modelNames.length}件だけ保守サービスを取得します。`);
+  }
 
   console.log(`${modelNames.length}件の型番について、保守サービスを取得します…`);
 
@@ -242,9 +270,7 @@ async function main() {
     await sleep(REQUEST_INTERVAL_MS);
 
     processed += 1;
-    if (processed % 25 === 0) {
-      console.log(`  ${processed}/${modelNames.length}件処理済み…`);
-    }
+    console.log(`  [${processed}/${modelNames.length}] "${model}" -> ${services.length}件の保守サービス`);
 
     if (services.length > 0) {
       products.push({ model, services });
