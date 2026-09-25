@@ -125,6 +125,8 @@
   const suggestBox = el("#model-suggest");
   const emptyState = el("#empty-state");
   const resultWrap = el("#result-wrap");
+  const resultImage = el("#result-image");
+  const resultDesc = el("#result-desc");
   const resultModel = el("#result-model");
   const resultCount = el("#result-count");
   const planGroups = el("#plan-groups");
@@ -138,37 +140,58 @@
   let dataLoaded = false;
   let highlightedIndex = -1;
 
-  // 生産終了品の型番一覧（NASセレクター側のデータから読み込む）。
-  // 取得に失敗しても検索自体は続行し、絞り込みを行わないだけにする（fail-safe）。
+  // 生産終了品の型番一覧・商品画像／説明（NASセレクター側の products.json から読み込む）。
+  // スキーマ：{ products: [{ name, imageUrl, status, variants: [{ sku, status }] }] }
+  // 型番（ISS側の model）は variants[].sku と対応する。sku 単位・シリーズ単位どちらの
+  // status が「生産終了」でもそのSKUは除外する。取得に失敗しても検索自体は続行し、
+  // 絞り込み・画像表示を行わないだけにする（fail-safe）。
   let discontinuedModels = new Set();
+  let modelInfoMap = new Map();
   fetch("https://ioplaza02.github.io/nas-selector/data/products.json")
     .then((res) => res.json())
     .then((data) => {
-      const list = data.products || data || [];
+      const list = data.products || [];
       list.forEach((p) => {
-        const variants = p.variants || [p];
-        const anyDiscontinued = variants.some((v) => v.discontinued === true || v.status === "discontinued" || v.status === "生産終了");
-        if (anyDiscontinued) {
-          if (p.model) discontinuedModels.add(String(p.model).toUpperCase());
-          variants.forEach((v) => {
-            if (v.sku) discontinuedModels.add(String(v.sku).toUpperCase());
-          });
-        } else {
-          variants.forEach((v) => {
-            if (v.discontinued === true || v.status === "discontinued" || v.status === "生産終了") {
-              if (v.sku) discontinuedModels.add(String(v.sku).toUpperCase());
-            }
-          });
-        }
+        const info = { image: p.imageUrl || null, desc: p.name || null };
+        const variants = p.variants || [];
+        variants.forEach((v) => {
+          if (!v.sku) return;
+          const skuUpper = String(v.sku).toUpperCase();
+          modelInfoMap.set(skuUpper, info);
+          if (v.status === "生産終了" || p.status === "生産終了") {
+            discontinuedModels.add(skuUpper);
+          }
+        });
       });
-      // 生産終了データが反映された状態で、検索欄に文字が残っていれば再検索する
+      // 生産終了データ・画像データが反映された状態で、
+      // 検索欄に文字が残っていれば再検索し、選択中の商品があれば画像・説明を更新する
       if (modelInput.value.trim()) {
         modelInput.dispatchEvent(new Event("input"));
       }
+      applyProductInfo();
     })
     .catch(() => {
-      // NASセレクター側のデータが取得できない場合は、生産終了フィルターを行わない
+      // NASセレクター側のデータが取得できない場合は、生産終了フィルター・画像表示を行わない
     });
+
+  // 検索結果ヘッダーに、NASセレクター側から取得した商品画像・製品名を反映する
+  function applyProductInfo() {
+    if (!currentProduct) return;
+    const info = modelInfoMap.get(currentProduct.model.toUpperCase());
+    if (info && info.image) {
+      resultImage.src = info.image;
+      resultImage.alt = currentProduct.model;
+      resultImage.hidden = false;
+    } else {
+      resultImage.hidden = true;
+    }
+    if (info && info.desc) {
+      resultDesc.textContent = info.desc;
+      resultDesc.hidden = false;
+    } else {
+      resultDesc.hidden = true;
+    }
+  }
 
   // ---------- URLパラメータの復元（共有リンク・NASセレクター連携用） ----------
 
@@ -330,6 +353,8 @@
     emptyState.hidden = false;
     resultWrap.hidden = true;
     shareBtn.hidden = true;
+    resultImage.hidden = true;
+    resultDesc.hidden = true;
   }
 
   function showLoading(query) {
@@ -337,6 +362,8 @@
     emptyState.hidden = true;
     resultWrap.hidden = false;
     shareBtn.hidden = true;
+    resultImage.hidden = true;
+    resultDesc.hidden = true;
     resultModel.textContent = query;
     resultCount.textContent = "";
     planGroups.innerHTML = `
@@ -350,6 +377,8 @@
     emptyState.hidden = true;
     resultWrap.hidden = false;
     shareBtn.hidden = true;
+    resultImage.hidden = true;
+    resultDesc.hidden = true;
     resultModel.textContent = query;
     resultCount.textContent = "";
     planGroups.innerHTML = `
@@ -456,6 +485,7 @@
     resultWrap.hidden = false;
     resultModel.textContent = currentProduct.model;
     shareBtn.hidden = false;
+    applyProductInfo();
 
     const { methods, hddReturn, defaultYears, hideExtension, hideOption } = getActiveFilters();
 
@@ -628,18 +658,24 @@
     return 0;
   }
 
-  function allYearsTableHtml(variants, selectedIndex) {
-    const rows = variants.map((v, i) => {
-      const incl = priceInclTax(v);
-      const priceText = incl ? `¥${incl.toLocaleString()}` : "価格は公式サイトで確認";
-      return `
-        <div class="all-years-row ${i === selectedIndex ? "all-years-row--selected" : ""}">
-          <span class="all-years-row__years">${escapeHtml(formatYears(v))}</span>
-          <span class="all-years-row__code">${escapeHtml(v.code)}</span>
-          <span class="all-years-row__price">${priceText}</span>
-        </div>`;
-    }).join("");
-    return `<div class="all-years-table" data-role="all-years-table" hidden>${rows}</div>`;
+  // アコーディオン展開時に表示する、年数ごとの行（税込・税抜の両方の価格を表示）
+  function allYearsRowHtml(v, selected) {
+    const incl = priceInclTax(v);
+    const priceMain = incl ? `¥${incl.toLocaleString()}` : "要確認";
+    const priceSub = v.priceExclTax ? `（税抜 ¥${v.priceExclTax.toLocaleString()}）` : "";
+    return `
+      <div class="all-years-row ${selected ? "all-years-row--selected" : ""}">
+        <span class="all-years-row__years">${escapeHtml(formatYears(v))}</span>
+        <span class="all-years-row__code">${escapeHtml(v.code)}</span>
+        <span class="all-years-row__price">
+          <span class="all-years-row__price-main">${priceMain}</span>
+          ${priceSub ? `<span class="all-years-row__price-sub">${escapeHtml(priceSub)}</span>` : ""}
+        </span>
+      </div>`;
+  }
+
+  function allYearsInnerHtml(variants, selectedIndex) {
+    return variants.map((v, i) => allYearsRowHtml(v, i === selectedIndex)).join("");
   }
 
   function renderCard(id, variants, subTitle, colorKey, defaultYears) {
@@ -667,12 +703,16 @@
         <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
         <div class="year-btn-row">${yearButtons}</div>
         ${allYearsToggle}
-        ${allYearsTableHtml(variants, initialIndex)}
-        <div class="plan-row__bottom">
-          <div class="plan-row__model">
-            <p class="plan-row__model-sku" data-role="model-sku">${escapeHtml(first.code)}</p>
+        <div class="plan-row__bottom-area" data-role="bottom-area">
+          <div class="plan-row__bottom" data-role="bottom">
+            <div class="plan-row__model">
+              <p class="plan-row__model-sku" data-role="model-sku">${escapeHtml(first.code)}</p>
+            </div>
+            <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
           </div>
-          <div class="plan-row__price" data-role="price">${priceHtml(first)}</div>
+          <div class="all-years-accordion" data-role="all-years-accordion">
+            <div class="all-years-accordion__inner" data-role="all-years-inner">${allYearsInnerHtml(variants, initialIndex)}</div>
+          </div>
         </div>
       </div>`;
   }
@@ -682,6 +722,8 @@
       const cardEl = document.getElementById(id);
       if (!cardEl) return;
       const buttons = cardEl.querySelectorAll(".year-btn");
+      const bottomArea = cardEl.querySelector('[data-role="bottom-area"]');
+      const allYearsBtn = cardEl.querySelector('[data-role="all-years-btn"]');
 
       function selectVariant(index) {
         buttons.forEach((b) => b.classList.remove("year-btn--selected"));
@@ -691,28 +733,20 @@
         cardEl.querySelector('[data-role="name"]').innerHTML = nameHtml(v);
         cardEl.querySelector('[data-role="price"]').innerHTML = priceHtml(v);
         cardEl.querySelector('[data-role="badges"]').innerHTML = buildBadges(v);
-        const table = cardEl.querySelector('[data-role="all-years-table"]');
-        if (table) table.outerHTML = allYearsTableHtml(variants, index) ;
-        // outerHTML で置き換えたので、hidden 状態は展開中だったかどうかに合わせて復元する
-        const newTable = cardEl.querySelector('[data-role="all-years-table"]');
-        if (newTable && allYearsBtn && allYearsBtn.dataset.expanded === "1") {
-          newTable.hidden = false;
-        }
+        const inner = cardEl.querySelector('[data-role="all-years-inner"]');
+        if (inner) inner.innerHTML = allYearsInnerHtml(variants, index);
       }
 
       buttons.forEach((btn) => {
         btn.addEventListener("click", () => selectVariant(Number(btn.dataset.index)));
       });
 
-      const allYearsBtn = cardEl.querySelector('[data-role="all-years-btn"]');
-      if (allYearsBtn) {
+      // 「全年数をまとめて見る」を押すと、型番・価格の表示エリアに重なる形で
+      // 全年数の一覧がビラッと開く（アコーディオン）
+      if (allYearsBtn && bottomArea) {
         allYearsBtn.addEventListener("click", () => {
-          const table = cardEl.querySelector('[data-role="all-years-table"]');
-          if (!table) return;
-          const expanded = table.hidden === false;
-          table.hidden = expanded;
-          allYearsBtn.dataset.expanded = expanded ? "0" : "1";
-          allYearsBtn.textContent = expanded ? "全年数をまとめて見る" : "閉じる";
+          const isOpen = bottomArea.classList.toggle("plan-row__bottom-area--open");
+          allYearsBtn.textContent = isOpen ? "閉じる" : "全年数をまとめて見る";
         });
       }
     });

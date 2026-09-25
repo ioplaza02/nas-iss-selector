@@ -196,12 +196,29 @@ body {
 
 .result-head {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  align-items: center;
+  gap: 14px;
   margin-bottom: 18px;
   flex-wrap: wrap;
 }
+.result-head__image {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 6px;
+  flex-shrink: 0;
+}
+.result-head__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .result-head h2 { margin: 0; font-size: 20px; font-weight: 900; font-family: ui-monospace, monospace; }
+.result-head__desc { margin: 0; font-size: 12px; color: var(--text-soft); }
 .result-count { margin: 0; font-size: 13px; color: var(--text-soft); }
 .share-btn {
   margin-left: auto;
@@ -372,7 +389,7 @@ body {
 }
 .year-btn--selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-deep); font-weight: 700; }
 
-/* 「全年数をまとめて見る」ボタンと、その展開テーブル */
+/* 「全年数をまとめて見る」ボタン（アコーディオンの開閉トリガー） */
 .all-years-btn {
   margin-top: 6px;
   padding: 4px 0;
@@ -385,35 +402,23 @@ body {
   cursor: pointer;
 }
 .all-years-btn:hover { color: var(--accent-deep); }
-.all-years-table {
-  margin-top: 8px;
-  border-top: 1px dashed var(--line);
-  padding-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.all-years-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
-}
-.all-years-row--selected { font-weight: 700; }
-.all-years-row__years { color: var(--text-soft); flex-shrink: 0; width: 64px; }
-.all-years-row__code { font-family: ui-monospace, monospace; color: var(--text); flex: 1 1 auto; }
-.all-years-row__price { flex-shrink: 0; white-space: nowrap; }
 
+/* 型番・価格の表示エリア。アコーディオンを開くと、この同じ場所に
+   全年数の一覧が「重なる」ように表示され、通常表示は隠れる。 */
+.plan-row__bottom-area {
+  position: relative;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
 .plan-row__bottom {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
 }
+.plan-row__bottom-area--open .plan-row__bottom { display: none; }
+
 .plan-row__model-sku {
   margin: 0;
   font-family: ui-monospace, monospace;
@@ -424,6 +429,35 @@ body {
 .plan-row__price { text-align: right; flex-shrink: 0; }
 .plan-row__price-value { margin: 0; font-size: 18px; font-weight: 700; }
 .plan-row__price-note { margin: 2px 0 0; font-size: 11px; color: var(--text-faint); }
+
+/* アコーディオン本体。max-height を 0→有限値に変化させて「ビラッと」伸びる動きにする */
+.all-years-accordion {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.28s ease;
+}
+.plan-row__bottom-area--open .all-years-accordion { max-height: 320px; }
+.all-years-accordion__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.all-years-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.all-years-row:last-child { border-bottom: none; }
+.all-years-row--selected { font-weight: 700; color: var(--text); }
+.all-years-row__years { color: var(--text-soft); flex-shrink: 0; width: 56px; }
+.all-years-row__code { font-family: ui-monospace, monospace; color: var(--text); flex: 1 1 auto; }
+.all-years-row__price { flex-shrink: 0; text-align: right; white-space: nowrap; }
+.all-years-row__price-main { font-weight: 700; }
+.all-years-row__price-sub { display: block; font-size: 10px; font-weight: 400; color: var(--text-faint); margin-top: 1px; }
 
 .no-match {
   background: var(--card);
