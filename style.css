@@ -12,6 +12,12 @@
   --accent-bg: #f7e7d3;
   --good: #3f7a5c;
   --good-bg: #e2efe8;
+  --cat-onsite: #3763c9;
+  --cat-onsite-deep: #24448f;
+  --cat-onsite-bg: #e6ecfb;
+  --cat-delivery: #2f9160;
+  --cat-delivery-deep: #1f6b45;
+  --cat-delivery-bg: #e2f4ea;
   --radius: 6px;
   font-family: "Zen Kaku Gothic New", -apple-system, "Hiragino Sans", sans-serif;
 }
@@ -243,6 +249,10 @@ body {
 .plan-group__desc { margin: 2px 0 0; font-size: 11px; color: var(--text-faint); }
 .plan-group__cards { display: flex; flex-direction: column; gap: 10px; }
 
+/* オンサイト（青）／デリバリィ（緑）の色分け。カード・アイコン背景・バッジに適用 */
+.plan-group--onsite .plan-group__icon { color: var(--cat-onsite); background: var(--cat-onsite-bg); }
+.plan-group--delivery .plan-group__icon { color: var(--cat-delivery); background: var(--cat-delivery-bg); }
+
 .plan-row__subtitle {
   margin: 0 0 8px;
   font-size: 11px;
@@ -303,8 +313,35 @@ body {
   border-radius: var(--radius);
   padding: 14px 16px;
 }
-.plan-row--extension { border-left-color: var(--text-faint); }
-.plan-row--option { border-left-color: var(--good); }
+
+/* オンサイト（青）／デリバリィ（緑）のカード全体の色分け */
+.plan-row--onsite {
+  border-left-color: var(--cat-onsite);
+}
+.plan-row--onsite .plan-row__subtitle {
+  color: var(--cat-onsite-deep);
+  background: var(--cat-onsite-bg);
+}
+.plan-row--onsite .year-btn--selected {
+  border-color: var(--cat-onsite);
+  background: var(--cat-onsite-bg);
+  color: var(--cat-onsite-deep);
+}
+.plan-row--onsite .all-years-btn:hover { border-color: var(--cat-onsite); color: var(--cat-onsite-deep); }
+
+.plan-row--delivery {
+  border-left-color: var(--cat-delivery);
+}
+.plan-row--delivery .plan-row__subtitle {
+  color: var(--cat-delivery-deep);
+  background: var(--cat-delivery-bg);
+}
+.plan-row--delivery .year-btn--selected {
+  border-color: var(--cat-delivery);
+  background: var(--cat-delivery-bg);
+  color: var(--cat-delivery-deep);
+}
+.plan-row--delivery .all-years-btn:hover { border-color: var(--cat-delivery); color: var(--cat-delivery-deep); }
 
 .plan-row__name { margin: 2px 0 0; font-size: 13px; font-weight: 600; line-height: 1.5; }
 .plan-row__name a { color: inherit; }
@@ -334,6 +371,39 @@ body {
   cursor: pointer;
 }
 .year-btn--selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent-deep); font-weight: 700; }
+
+/* 「全年数をまとめて見る」ボタンと、その展開テーブル */
+.all-years-btn {
+  margin-top: 6px;
+  padding: 4px 0;
+  font-size: 11px;
+  font-family: inherit;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.all-years-btn:hover { color: var(--accent-deep); }
+.all-years-table {
+  margin-top: 8px;
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.all-years-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+}
+.all-years-row--selected { font-weight: 700; }
+.all-years-row__years { color: var(--text-soft); flex-shrink: 0; width: 64px; }
+.all-years-row__code { font-family: ui-monospace, monospace; color: var(--text); flex: 1 1 auto; }
+.all-years-row__price { flex-shrink: 0; white-space: nowrap; }
 
 .plan-row__bottom {
   display: flex;
