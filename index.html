@@ -52,9 +52,9 @@
 
     <div class="filter-group">
       <p class="filter-group__label">初期表示の保守年数</p>
-      <label class="filter-option"><input type="radio" name="default-years" value="any" checked> 指定なし（最短年数）</label>
+      <p class="filter-group__note">5年がおすすめです</p>
+      <label class="filter-option"><input type="radio" name="default-years" value="5" checked> 5年</label>
       <label class="filter-option"><input type="radio" name="default-years" value="1"> 1年</label>
-      <label class="filter-option"><input type="radio" name="default-years" value="5"> 5年</label>
       <label class="filter-option"><input type="radio" name="default-years" value="7"> 7年</label>
     </div>
 
@@ -63,12 +63,6 @@
       <label class="filter-option"><input type="radio" name="hdd-return" value="any" checked> 指定なし</label>
       <label class="filter-option"><input type="radio" name="hdd-return" value="not-required"> 返却したくない（社外に出せない）</label>
       <label class="filter-option"><input type="radio" name="hdd-return" value="required"> 返却してもよい（費用を抑えたい）</label>
-    </div>
-
-    <div class="filter-group">
-      <p class="filter-group__label">加入形態</p>
-      <label class="filter-option"><input type="checkbox" id="hide-extension"> 延長パック（既存加入者専用）を隠す</label>
-      <label class="filter-option"><input type="checkbox" id="hide-option"> オプション単体を隠す</label>
     </div>
 
     <button type="button" class="filter-reset" id="filter-reset">絞り込みを解除する</button>
@@ -101,7 +95,6 @@
     <p class="info-footer__title">こんなケースは対象外です</p>
     <ul class="info-footer__list">
       <li>すでにNASを購入して61日以上経っており、まだ保守に入っていない場合 → <a href="https://www.iodata.jp/support/service/iss/maintenance/nas/after.htm" target="_blank" rel="noopener">アフター保守はこちら</a></li>
-      <li>購入したNASの設置・初期設定を代行してほしい場合 → <a href="https://www.iodata.jp/support/service/iss/service/set/index.htm" target="_blank" rel="noopener">設置設定サービスはこちら</a></li>
     </ul>
     <p class="info-footer__updated" id="updated-at"></p>
   </div>

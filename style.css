@@ -158,6 +158,11 @@ body {
   font-weight: 700;
   color: var(--text-soft);
 }
+.filter-group__note {
+  margin: -4px 0 8px;
+  font-size: 11px;
+  color: var(--accent-deep);
+}
 .filter-option {
   display: flex;
   align-items: flex-start;

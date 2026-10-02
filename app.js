@@ -219,9 +219,6 @@
       const target = filterPanelEl().querySelector(`input[name="default-years"][value="${years}"]`);
       if (target) target.checked = true;
     }
-
-    if (params.get("hideExt") === "1") el("#hide-extension").checked = true;
-    if (params.get("hideOpt") === "1") el("#hide-option").checked = true;
   }
 
   function filterPanelEl() {
@@ -397,9 +394,7 @@
   filterReset.addEventListener("click", () => {
     filterPanel.querySelectorAll('input[name="method"]').forEach((c) => (c.checked = true));
     filterPanel.querySelector('input[name="hdd-return"][value="any"]').checked = true;
-    filterPanel.querySelector('input[name="default-years"][value="any"]').checked = true;
-    el("#hide-extension").checked = false;
-    el("#hide-option").checked = false;
+    filterPanel.querySelector('input[name="default-years"][value="5"]').checked = true;
     if (currentProduct) renderResults();
   });
 
@@ -407,22 +402,18 @@
     const methods = Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
     const hddReturn = filterPanel.querySelector('input[name="hdd-return"]:checked').value;
     const defaultYearsInput = filterPanel.querySelector('input[name="default-years"]:checked');
-    const defaultYears = defaultYearsInput ? defaultYearsInput.value : "any";
-    const hideExtension = el("#hide-extension").checked;
-    const hideOption = el("#hide-option").checked;
-    return { methods, hddReturn, defaultYears, hideExtension, hideOption };
+    const defaultYears = defaultYearsInput ? defaultYearsInput.value : "5";
+    return { methods, hddReturn, defaultYears };
   }
 
   function buildShareUrl() {
     if (!currentProduct) return location.href;
-    const { methods, hddReturn, defaultYears, hideExtension, hideOption } = getActiveFilters();
+    const { methods, hddReturn, defaultYears } = getActiveFilters();
     const params = new URLSearchParams();
     params.set("model", currentProduct.model);
     if (methods.length > 0) params.set("methods", methods.join(","));
     if (hddReturn !== "any") params.set("hdd", hddReturn);
-    if (defaultYears !== "any") params.set("years", defaultYears);
-    if (hideExtension) params.set("hideExt", "1");
-    if (hideOption) params.set("hideOpt", "1");
+    if (defaultYears !== "5") params.set("years", defaultYears);
     return `${location.origin}${location.pathname}?${params.toString()}`;
   }
 
@@ -487,15 +478,10 @@
     shareBtn.hidden = false;
     applyProductInfo();
 
-    const { methods, hddReturn, defaultYears, hideExtension, hideOption } = getActiveFilters();
+    const { methods, hddReturn, defaultYears } = getActiveFilters();
 
     const filtered = currentProduct.services.filter((s) => {
-      if (s.isOption) {
-        if (hideOption) return false;
-      } else if (s.isExtension) {
-        if (hideExtension) return false;
-        if (!methods.includes(s.method)) return false;
-      } else {
+      if (!s.isOption) {
         if (!methods.includes(s.method)) return false;
       }
       if (hddReturn === "not-required" && s.hddReturnRequired !== false) return false;
