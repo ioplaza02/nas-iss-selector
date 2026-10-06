@@ -33,12 +33,27 @@
       <input type="text" id="model-input" class="search__input" placeholder="型番を入力してください" autocomplete="off">
       <div class="search__suggest" id="model-suggest" hidden></div>
     </div>
+    <!-- 型番を入れようとして「分からない」と思ったその場で目に入るよう、検索窓の真下に置く -->
+    <button type="button" class="browse-toggle" id="browse-toggle" aria-expanded="false" aria-controls="browse-panel">
+      <span class="browse-toggle__icon" aria-hidden="true">☰</span>
+      型番を入力せずに、一覧から機種を選ぶ
+      <span class="browse-toggle__arrow" aria-hidden="true">▾</span>
+    </button>
+    <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。例えば「LX04」だけでも「HDL4-LX04」が候補に出ます。</p>
   </div>
 </header>
 
-<div class="hint-bar">
-  <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。例えば「LX04」だけでも「HDL4-LX04」が候補に出ます。</p>
-</div>
+<section class="browse-panel" id="browse-panel" aria-label="一覧から機種を選ぶ">
+  <div class="browse-panel__inner">
+    <div class="browse-panel__head">
+      <p class="browse-panel__title">機種を選ぶ<span class="browse-panel__sub">シリーズ名を確認して、お使いの（またはご購入予定の）容量のボタンを押すと、対応する保守プランが表示されます</span></p>
+      <button type="button" class="browse-panel__close" id="browse-close">閉じる ▴</button>
+    </div>
+    <div class="browse-filters" id="browse-filters"></div>
+    <p class="browse-count" id="browse-count"></p>
+    <div class="browse-grid" id="browse-grid"></div>
+  </div>
+</section>
 
 <main class="layout">
   <aside class="filter-panel" aria-label="絞り込み条件">
@@ -72,6 +87,7 @@
     <div class="empty-state" id="empty-state">
       <p class="empty-state__title">型番を入力してください</p>
       <p class="empty-state__body">上の検索欄にNASの型番（一部でも可）を入れると、対応する保守プランの候補が表示されます。</p>
+      <p class="empty-state__body">型番を入力しなくても、<button type="button" class="link-btn" id="browse-open-inline">一覧から機種を選ぶ</button>こともできます。</p>
     </div>
 
     <div id="result-wrap" hidden>
