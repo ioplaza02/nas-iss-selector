@@ -742,3 +742,14 @@ body {
 }
 .password-gate__submit:hover { background: var(--accent-deep); }
 .password-gate__error { margin: 10px 0 0; font-size: 12px; color: #e08a6b; }
+
+/* 価格の注意書き（保守プラン一覧のすぐ上に1行で表示） */
+.price-notice {
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--accent-deep);
+  background: var(--accent-bg);
+  border-radius: var(--radius);
+}
