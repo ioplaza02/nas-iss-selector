@@ -70,6 +70,9 @@ body {
   background: var(--ink);
   padding: 0 24px 14px;
   text-align: right;
+  /* 中の説明文の上余白が帯の外にはみ出して、ヘッダーとの間に
+     明るい隙間（線）ができていたのを防ぐ */
+  display: flow-root;
 }
 
 .search { position: relative; }
@@ -489,16 +492,19 @@ body {
 
 /* ---------- 一覧から機種を選ぶ（蛇腹パネル） ---------- */
 
-/* 検索窓の真下に、検索窓と同じ幅でボタンを置く */
-.brand-banner__search .browse-toggle {
-  width: 100%;
-  justify-content: center;
-  margin-top: 8px;
+/* 検索窓（左）と「一覧から機種を選ぶ」ボタン（右）を横一列に並べる。
+   ヘッダーの黒い帯の厚みを増やさないよう、ボタンの高さは検索窓に合わせる */
+.brand-banner__search { max-width: 600px; }
+.search-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
-.brand-banner__search .hero__hint {
-  margin: 6px 4px 0;
-  text-align: left;
-  line-height: 1.5;
+.search-row .search { flex: 1 1 auto; min-width: 0; }
+.search-row .browse-toggle {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 0 16px;
 }
 
 .browse-toggle {
