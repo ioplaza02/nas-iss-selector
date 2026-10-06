@@ -633,7 +633,11 @@ body {
 .browse-card__name { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.4; }
 .browse-card__meta { margin: 0; font-size: 11px; color: var(--text-faint); }
 .browse-card__cap-label { margin: 6px 0 2px; font-size: 11px; color: var(--text-soft); }
-.browse-card__caps { display: flex; flex-wrap: wrap; gap: 5px; }
+/* 容量ボタンは常に2列で並べる。型番が長いシリーズ（例：HDL1-LA01SOHO）でも
+   1列に縦並びにならず、カードの高さがそろうようにする */
+.browse-card__caps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.browse-card__caps .cap-btn { width: 100%; min-width: 0; padding: 4px 4px; }
+.browse-card__caps .cap-btn__sku { max-width: 100%; overflow-wrap: anywhere; text-align: center; letter-spacing: -0.02em; }
 .cap-btn {
   font-family: inherit;
   display: inline-flex;
