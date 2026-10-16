@@ -787,6 +787,9 @@ body { line-height: 1.65; }
   padding: 22px 28px 16px;
   align-items: flex-start;
   isolation: isolate;
+  /* 候補リスト（ヘッダーから下に垂れ下がる）が、アニメーション付きの下のカードに
+     隠れないよう、ヘッダー全体を手前の層に置く */
+  z-index: 30;
 }
 .brand-banner__deco { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: -1; }
 .brand-banner__deco::before, .brand-banner__deco::after {
