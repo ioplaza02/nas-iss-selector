@@ -106,6 +106,8 @@
     </div>
 
     <div id="result-wrap" hidden>
+      <!-- PDF（印刷）のときだけ表示する見出し：出力日・表示条件・データ更新日 -->
+      <div class="print-only" id="print-meta"></div>
       <div class="result-head">
         <img class="result-head__image" id="result-image" src="" alt="" hidden>
         <div class="result-head__text">
@@ -113,7 +115,10 @@
           <p class="result-head__desc" id="result-desc" hidden></p>
           <p class="result-count" id="result-count"></p>
         </div>
-        <button type="button" class="share-btn" id="share-btn" hidden>このページのURLをコピー</button>
+        <div class="result-head__actions">
+          <button type="button" class="share-btn" id="share-btn" hidden>このページのURLをコピー</button>
+          <button type="button" class="share-btn pdf-btn" id="pdf-btn" hidden>PDFで保存</button>
+        </div>
         <span class="share-feedback" id="share-feedback" hidden></span>
       </div>
       <!-- 価格の注意書き（NAS・DAS・スイッチセレクターと同じ文） -->

@@ -132,6 +132,7 @@
   const planGroups = el("#plan-groups");
   const shareBtn = el("#share-btn");
   const shareFeedback = el("#share-feedback");
+  const pdfBtn = el("#pdf-btn");
   const filterReset = el("#filter-reset");
   const updatedAtEl = el("#updated-at");
 
@@ -365,7 +366,7 @@
     currentProduct = null;
     emptyState.hidden = false;
     resultWrap.hidden = true;
-    shareBtn.hidden = true;
+    shareBtn.hidden = true; pdfBtn.hidden = true;
     resultImage.hidden = true;
     resultDesc.hidden = true;
   }
@@ -374,7 +375,7 @@
     currentProduct = null;
     emptyState.hidden = true;
     resultWrap.hidden = false;
-    shareBtn.hidden = true;
+    shareBtn.hidden = true; pdfBtn.hidden = true;
     resultImage.hidden = true;
     resultDesc.hidden = true;
     resultModel.textContent = query;
@@ -389,7 +390,7 @@
     currentProduct = null;
     emptyState.hidden = true;
     resultWrap.hidden = false;
-    shareBtn.hidden = true;
+    shareBtn.hidden = true; pdfBtn.hidden = true;
     resultImage.hidden = true;
     resultDesc.hidden = true;
     resultModel.textContent = query;
@@ -643,6 +644,62 @@
     setTimeout(() => { shareFeedback.hidden = true; }, 2500);
   });
 
+  // ---------- PDFで保存（NASセレクター・B社比較ツールと同じ方式） ----------
+  // ブラウザの印刷画面を開き、「PDFに保存」を選んでもらう。
+  // Chrome・Edgeはページのタイトルを保存名の初期値に使うため、印刷中だけタイトルを
+  // 「NASの型番_ISS_日付8桁」（例：HDL4-LX04_ISS_20261016）に差し替え、印刷後に元へ戻す。
+
+  function ymd8(d) {
+    const pad = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+  }
+
+  function pdfFileName() {
+    const model = currentProduct ? currentProduct.model : "";
+    return (model ? model + "_ISS" : "ISSセレクター") + "_" + ymd8(new Date());
+  }
+
+  const METHOD_LABELS = {
+    onsite: "訪問安心保守（ベーシックプラン）",
+    onsite_sameday: "訪問安心保守（当日訪問プラン）",
+    delivery: "交換品お届け保守",
+    sendback: "保証期間延長（センドバック）"
+  };
+  const HDD_LABELS = {
+    any: "指定なし",
+    "not-required": "返却したくない（HDD返却不要タイプ）",
+    required: "返却してもよい（HDD返却必要タイプ）"
+  };
+
+  function fillPrintMeta() {
+    const meta = el("#print-meta");
+    if (!meta) return;
+    const d = new Date();
+    const { methods, hddReturn } = getActiveFilters();
+    const methodText = methods.length === Object.keys(METHOD_LABELS).length
+      ? "すべて"
+      : methods.map((m) => METHOD_LABELS[m]).filter(Boolean).join("・") || "（選択なし）";
+    meta.innerHTML = `
+      <p class="print-meta__title">ISSセレクター 保守プラン一覧　出力日：${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日</p>
+      <p class="print-meta__line">表示条件：保守の方式＝${escapeHtml(methodText)}／HDDの返却＝${escapeHtml(HDD_LABELS[hddReturn] || "指定なし")}</p>
+      <p class="print-meta__line">${escapeHtml(updatedAtEl.textContent || "")}</p>`;
+  }
+
+  function savePdf() {
+    if (!currentProduct) return;
+    fillPrintMeta();
+    const originalTitle = document.title;
+    const restore = () => {
+      document.title = originalTitle;
+      window.removeEventListener("afterprint", restore);
+    };
+    window.addEventListener("afterprint", restore);
+    document.title = pdfFileName();
+    window.print();
+  }
+
+  pdfBtn.addEventListener("click", savePdf);
+
   // ---------- 結果表示 ----------
 
   let cardVariantMap = {};
@@ -713,7 +770,7 @@
     emptyState.hidden = true;
     resultWrap.hidden = false;
     resultModel.textContent = currentProduct.model;
-    shareBtn.hidden = false;
+    shareBtn.hidden = false; pdfBtn.hidden = false;
     applyProductInfo();
 
     const { methods, hddReturn, defaultYears } = getActiveFilters();

@@ -1035,3 +1035,62 @@ body { line-height: 1.65; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- PDFで保存 ---------- */
+.result-head__actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.result-head__actions .share-btn { margin-left: 0; }
+.print-only { display: none; }
+
+/* 印刷（PDF）：結果の部分だけをA4縦に出す。
+   年数はボタンで切り替えるのではなく、全年数の一覧を開いた状態で載せる
+   （選んでいた年数の行は太字のまま残る）。 */
+@page { size: A4 portrait; margin: 12mm; }
+@media print {
+  .password-gate, .brand-banner, .browse-panel, .page-hero, .filter-panel,
+  .empty-state, .info-footer, .result-head__actions, .share-feedback,
+  .year-btn-row, .all-years-btn { display: none !important; }
+  body { background: #fff; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .layout { display: block; max-width: none; padding: 0; margin: 0; }
+  .print-only { display: block; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 2px solid #c8792e; }
+  .print-meta__title { margin: 0 0 2px; font-size: 14px; font-weight: 700; color: #1c2126; }
+  .print-meta__line { margin: 0; font-size: 11px; color: #3f4650; }
+  .result-head { box-shadow: none; padding: 10px 14px; margin-bottom: 10px; }
+  .price-notice { box-shadow: none; font-size: 10px; padding: 6px 12px; margin-bottom: 10px; }
+  #plan-groups { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .plan-row, .plan-group__icon { box-shadow: none; }
+  .plan-row { break-inside: avoid; padding: 12px 14px; }
+  .plan-row:hover { transform: none; }
+  .plan-group__cards { gap: 8px; }
+  .all-years-accordion { max-height: none !important; overflow: visible; margin-top: 6px; }
+  /* 大きな価格表示は出さず、全年数の一覧（選んでいた年数は太字）に一本化して紙面を詰める */
+  .plan-row__bottom { display: none !important; }
+  .plan-row__bottom-area { margin-top: 8px; padding-top: 6px; }
+  .all-years-accordion { margin-top: 0; }
+  .all-years-row { padding: 3px 0; font-size: 11px; }
+  .all-years-row__price-main { font-size: 12px; }
+  .all-years-row__price-sub { display: inline; margin-left: 4px; }
+  .print-only { margin-bottom: 8px; padding-bottom: 6px; }
+  .result-head { padding: 6px 12px !important; margin-bottom: 8px !important; gap: 10px; }
+  .result-head__image { width: 48px; height: 48px; }
+  .result-head h2 { font-size: 18px; }
+  .result-count { font-size: 11px; }
+  .price-notice { margin-bottom: 8px !important; }
+  .plan-row { padding: 8px 12px 6px !important; border-radius: 10px; }
+  .plan-row::before { height: 3px; }
+  .plan-row__badges .badge { font-size: 10px; padding: 1px 8px; }
+  .plan-row__subtitle { font-size: 10px; padding: 1px 8px; }
+  .plan-row__bottom-area { margin-top: 4px !important; padding-top: 2px !important; }
+  .all-years-row { padding: 2px 0 !important; }
+  .plan-group__cards { gap: 6px !important; }
+  #plan-groups { gap: 10px !important; }
+  .plan-row__subtitle { margin-bottom: 4px; }
+  .plan-row__name { font-size: 12px; }
+  .plan-row__badges { margin-top: 4px; }
+  .plan-group__header { margin-bottom: 6px; }
+  .plan-group__icon { width: 40px; height: 40px; }
+  .plan-group__title { font-size: 14px; }
+  .plan-group__desc { font-size: 10px; }
+  .plan-row__name a { text-decoration: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
