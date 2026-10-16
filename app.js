@@ -139,6 +139,13 @@
   let currentProduct = null;
   let dataLoaded = false;
   let highlightedIndex = -1;
+  // URL（?model=）やデータ読み込み完了時の「自動の再検索」では、候補リストを開いたままにしない
+  let silentSearch = false;
+  function rerunSearchSilently() {
+    silentSearch = true;
+    modelInput.dispatchEvent(new Event("input"));
+    silentSearch = false;
+  }
 
   // 生産終了品の型番一覧・商品画像／説明（NASセレクター側の products.json から読み込む）。
   // スキーマ：{ products: [{ name, imageUrl, status, variants: [{ sku, status }] }] }
@@ -168,7 +175,7 @@
       // 生産終了データ・画像データが反映された状態で、
       // 検索欄に文字が残っていれば再検索し、選択中の商品があれば画像・説明を更新する
       if (modelInput.value.trim()) {
-        modelInput.dispatchEvent(new Event("input"));
+        rerunSearchSilently();
       }
       applyProductInfo();
       if (browseIsOpen()) renderBrowse();
@@ -242,7 +249,7 @@
       // データの読み込みが完了する前に型番を入力し終えているケースがあるため、
       // 読み込み完了時点で検索欄に文字が残っていれば、あらためて検索し直す。
       if (modelInput.value.trim()) {
-        modelInput.dispatchEvent(new Event("input"));
+        rerunSearchSilently();
       }
     })
     .catch(() => {
@@ -307,7 +314,10 @@
 
     // 完全一致が1件だけなら、それを即座に表示する
     const exact = allProducts.find((p) => p.model.toUpperCase() === q.toUpperCase() && !discontinuedModels.has(p.model.toUpperCase()));
-    if (exact) selectProduct(exact);
+    if (exact) {
+      selectProduct(exact);
+      if (silentSearch) suggestBox.hidden = true;
+    }
   });
 
   // 矢印キー（↑↓）で候補を選び、Enterで確定できるようにする
@@ -673,6 +683,32 @@
     }
   ];
 
+  // ---------- 型番を入れる前の画面：保守サービスの種類の紹介 ----------
+  // 表示する文言・流れ図は、結果画面と同じ TOP_GROUPS / FLOW_STEPS をそのまま使う
+  function renderIntro() {
+    const introEl = document.getElementById("intro");
+    if (!introEl) return;
+    const items = [
+      { g: TOP_GROUPS[0], flow: FLOW_STEPS.onsite, chips: ["ベーシックプラン", "当日訪問プラン"] },
+      { g: TOP_GROUPS[1], flow: FLOW_STEPS.delivery, chips: [] },
+      { g: TOP_GROUPS[2], flow: FLOW_STEPS.sendback, chips: [] }
+    ];
+    introEl.innerHTML = `
+      <p class="intro__label">保守サービス（ISS）の種類</p>
+      <div class="intro__grid">
+        ${items.map(({ g, flow, chips }, i) => `
+          <div class="intro-card intro-card--${g.colorKey || "sendback"}" style="animation-delay:${0.12 + i * 0.1}s">
+            <div class="intro-card__head">
+              <span class="plan-group__icon">${g.icon}</span>
+              <p class="intro-card__title">${escapeHtml(g.title)}</p>
+            </div>
+            ${chips.length ? `<div class="intro-card__chips">${chips.map((c) => `<span class="plan-row__subtitle">${escapeHtml(c)}</span>`).join("")}</div>` : ""}
+            <p class="intro-card__desc">${escapeHtml(g.desc)}</p>
+            ${renderFlow(flow)}
+          </div>`).join("")}
+      </div>`;
+  }
+
   function renderResults() {
     emptyState.hidden = true;
     resultWrap.hidden = false;
@@ -885,7 +921,7 @@
       : "";
 
     return `
-      <div class="plan-row ${rowClasses}" id="${id}">
+      <div class="plan-row ${rowClasses}" id="${id}" style="animation-delay:${Math.min(cardCounter, 10) * 0.05}s">
         ${subTitle ? `<p class="plan-row__subtitle">${escapeHtml(subTitle)}</p>` : ""}
         <p class="plan-row__name" data-role="name">${nameHtml(first)}</p>
         <div class="plan-row__badges" data-role="badges">${buildBadges(first)}</div>
@@ -946,6 +982,8 @@
     }[c]));
   }
   function escapeAttr(str) { return escapeHtml(str); }
+
+  renderIntro();
 
   } // ← initApp() の終わり
 })();

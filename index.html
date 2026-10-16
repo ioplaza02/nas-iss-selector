@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ISSセレクター（試作）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,9 +26,10 @@
 <div id="app-root" hidden>
 
 <header class="brand-banner">
+  <span class="brand-banner__deco" aria-hidden="true"></span>
   <div class="brand-banner__left">
-    <p class="brand-banner__badge">ISSセレクター</p>
     <img src="landisk-logo.png" alt="LAN DISK" class="brand-banner__logo">
+    <p class="brand-banner__badge">ISSセレクター</p>
   </div>
   <div class="brand-banner__search">
     <!-- 型番を入れようとして「分からない」と思ったその場で目に入るよう、検索窓のすぐ右隣に並べる -->
@@ -41,12 +44,11 @@
         <span class="browse-toggle__arrow" aria-hidden="true">▾</span>
       </button>
     </div>
+    <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。例えば「LX04」だけでも「HDL4-LX04」が候補に出ます。</p>
   </div>
 </header>
 
-<div class="hint-bar">
-  <p class="hero__hint">容量まで含めた完全な型番でなくてもOK。例えば「LX04」だけでも「HDL4-LX04」が候補に出ます。</p>
-</div>
+
 
 <section class="browse-panel" id="browse-panel" aria-label="一覧から機種を選ぶ">
   <div class="browse-panel__inner">
@@ -59,6 +61,13 @@
     <div class="browse-grid" id="browse-grid"></div>
   </div>
 </section>
+
+<div class="page-hero">
+  <div class="page-hero__inner">
+    <h1 class="page-hero__title">保守サービス選定ツール</h1>
+    <p class="page-hero__sub">NASの型番から、加入できる保守サービス（ISS）のプランと価格を確認できます</p>
+  </div>
+</div>
 
 <main class="layout">
   <aside class="filter-panel" aria-label="絞り込み条件">
@@ -93,6 +102,7 @@
       <p class="empty-state__title">型番を入力してください</p>
       <p class="empty-state__body">上の検索欄にNASの型番（一部でも可）を入れると、対応する保守プランの候補が表示されます。</p>
       <p class="empty-state__body">型番を入力しなくても、<button type="button" class="link-btn" id="browse-open-inline">一覧から機種を選ぶ</button>こともできます。</p>
+      <div class="intro" id="intro"></div>
     </div>
 
     <div id="result-wrap" hidden>
