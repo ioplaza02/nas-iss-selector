@@ -75,28 +75,40 @@
 
 <main class="layout">
   <aside class="filter-panel" aria-label="絞り込み条件">
-    <div class="filter-group">
-      <p class="filter-group__label">保守の方式</p>
-      <label class="filter-option"><input type="checkbox" name="method" value="onsite" checked> 訪問安心保守（オンサイト・スタッフが訪問）</label>
-      <label class="filter-option"><input type="checkbox" name="method" value="onsite_sameday" checked> 当日訪問プラン（オンサイトの上位プラン）</label>
-      <label class="filter-option"><input type="checkbox" name="method" value="delivery" checked> 交換品お届け保守（デリバリィ・自分で交換）</label>
-      <label class="filter-option"><input type="checkbox" name="method" value="sendback" checked> 保証期間延長（センドバック）</label>
-    </div>
+    <!-- 各項目は他のセレクターと同じく、見出しを押すと開閉する「じゃばら」。最初は開いた状態 -->
+    <details class="filter-group" open>
+      <summary class="filter-group__label">保守の方式</summary>
+      <div class="filter-group__body">
+        <label class="filter-option"><input type="checkbox" name="method" value="onsite" checked> 訪問安心保守（オンサイト・スタッフが訪問）</label>
+        <label class="filter-option"><input type="checkbox" name="method" value="onsite_sameday" checked> 当日訪問プラン（オンサイトの上位プラン）</label>
+        <label class="filter-option"><input type="checkbox" name="method" value="delivery" checked> 交換品お届け保守（デリバリィ・自分で交換）</label>
+        <label class="filter-option"><input type="checkbox" name="method" value="sendback" checked> 保証期間延長（センドバック）</label>
+      </div>
+    </details>
 
-    <div class="filter-group">
-      <p class="filter-group__label">初期表示の保守年数</p>
-      <p class="filter-group__note">5年がおすすめです</p>
-      <label class="filter-option"><input type="radio" name="default-years" value="5" checked> 5年</label>
-      <label class="filter-option"><input type="radio" name="default-years" value="1"> 1年</label>
-      <label class="filter-option"><input type="radio" name="default-years" value="7"> 7年</label>
-    </div>
+    <details class="filter-group" open>
+      <summary class="filter-group__label">初期表示の保守年数</summary>
+      <div class="filter-group__body">
+        <p class="filter-group__note">5年がおすすめです</p>
+        <label class="filter-option"><input type="radio" name="default-years" value="5" checked> 5年</label>
+        <label class="filter-option"><input type="radio" name="default-years" value="1"> 1年</label>
+        <label class="filter-option"><input type="radio" name="default-years" value="7"> 7年</label>
+      </div>
+    </details>
 
-    <div class="filter-group">
-      <p class="filter-group__label">HDDの返却</p>
-      <label class="filter-option"><input type="radio" name="hdd-return" value="any" checked> 指定なし</label>
-      <label class="filter-option"><input type="radio" name="hdd-return" value="not-required"> 返却したくない（社外に出せない）</label>
-      <label class="filter-option"><input type="radio" name="hdd-return" value="required"> 返却してもよい（費用を抑えたい）</label>
-    </div>
+    <details class="filter-group" id="hdd-group" open>
+      <summary class="filter-group__label">HDDの返却</summary>
+      <div class="filter-group__body">
+        <!-- 「保証期間延長（センドバック）」だけを選んでいるときは、HDD返却の区分がないため選べなくする -->
+        <p class="filter-group__disabled-note" id="hdd-disabled-note" hidden>保証期間延長（センドバック）には、HDDの返却の区分がありません。</p>
+        <label class="filter-option"><input type="radio" name="hdd-return" value="any" checked> 指定なし</label>
+        <label class="filter-option"><input type="radio" name="hdd-return" value="not-required"> 返却したくない（社外に出せない）</label>
+        <div class="filter-option-row">
+          <label class="filter-option"><input type="radio" name="hdd-return" value="required"> 返却してもよい（費用を抑えたい）</label>
+          <button type="button" class="help-btn" id="hdd-help-btn" aria-label="HDDを返却した場合の取り扱いを見る" aria-haspopup="dialog">?</button>
+        </div>
+      </div>
+    </details>
 
     <button type="button" class="filter-reset" id="filter-reset">絞り込みを解除する</button>
   </aside>
@@ -144,6 +156,34 @@
     <p class="info-footer__updated" id="updated-at"></p>
   </div>
 </footer>
+
+<!-- 「HDDの返却」の ? を押したときのポップアップ（ISSの利用規約の該当条文の案内） -->
+<div class="help-modal" id="hdd-help-modal" hidden>
+  <div class="help-modal__box" role="dialog" aria-modal="true" aria-labelledby="hdd-help-title">
+    <button type="button" class="help-modal__close" id="hdd-help-close" aria-label="閉じる">×</button>
+    <p class="help-modal__eyebrow">HDDの返却について</p>
+    <h3 class="help-modal__title" id="hdd-help-title">HDDを返却した場合の取り扱い</h3>
+    <ul class="help-modal__points">
+      <li>故障したHDDなどの不具合製品・部品は、保守作業のあとアイ・オー・データが<strong>すべて回収</strong>します（所有権はアイ・オー・データに帰属します）。</li>
+      <li>回収したものは、内部に記録された情報が漏洩等しないよう、アイ・オー・データの判断で<strong>適切に処分</strong>されます。</li>
+      <li>重要なプログラムやデータが保存されている場合は、<strong>お客様の責任で事前に消去</strong>してください。</li>
+      <li>回収ができない場合は、交換品の費用相当額のお支払いが必要です。</li>
+      <li>HDDを社外に出せない場合は「HDD返却不要タイプ」をお選びください。ただし、HDD返却不要タイプでも、お客様がHDDを送付した時点で所有権はアイ・オー・データに移ります。</li>
+    </ul>
+    <div class="help-modal__quote">
+      <p class="help-modal__quote-title">ご利用規約の原文（訪問安心保守サービス　第10条 不具合製品・不具合部品の回収）</p>
+      <ol>
+        <li>不具合製品や不具合部品の所有権は、「HDD返却不要タイプ」の場合を除いて、弊社に帰属します。そのため本サービス実施後に不具合製品や不具合部品はすべて回収します。不具合製品や不具合部品の回収ができない場合、交換品の費用相当額をお支払いいただきますのでご注意ください。尚、「HDD返却不要タイプ」の場合であっても、お客様が弊社に不具合製品や不具合部品を送付した時点で、当該製品・部品の所有権は弊社に移転するものといたします。</li>
+        <li>前項により回収した不具合製品や不具合部品は弊社の判断で処分等します。内部に記録された情報が漏洩等しないよう適切に処分しますが、重要なプログラムやデータが保存されている場合は、お客様の責任で事前に消去をしてください。</li>
+      </ol>
+    </div>
+    <p class="help-modal__note">交換品お届け保守（デリバリィ）の規約にも、第9条に同じ趣旨の定めがあります（「代替品の費用相当額」など、一部の言い回しが異なります）。正式な内容は各規約をご確認ください。</p>
+    <div class="help-modal__links">
+      <a href="https://www.iodata.jp/support/service/iss/maintenance/nas/pdf/onsite-basic-kiyaku.pdf" target="_blank" rel="noopener">訪問安心保守サービス ご利用規約（PDF）</a>
+      <a href="https://www.iodata.jp/support/service/iss/maintenance/nas/pdf/delivery-basic-kiyaku.pdf" target="_blank" rel="noopener">交換品お届け保守サービス ご利用規約（PDF）</a>
+    </div>
+  </div>
+</div>
 
 </div>
 

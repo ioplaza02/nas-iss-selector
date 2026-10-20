@@ -154,6 +154,22 @@
   // status が「生産終了」でもそのSKUは除外する。取得に失敗しても検索自体は続行し、
   // 絞り込み・画像表示を行わないだけにする（fail-safe）。
   let discontinuedModels = new Set();
+  // NASセレクターに「現行」または「在庫限り」として載っている型番（＝今も販売中の型番）。
+  // 古い型番（例：HDL-C500）はNASセレクターのデータに載っていないため、
+  // 「生産終了」と書かれていなくても、ここに無ければ検索候補に出さない。
+  let activeModels = new Set();
+  let nasDataReady = false; // NASセレクターのデータが読めたか（読めない間は絞り込まない＝fail-safe）
+
+  // NASセレクターが扱っていない商品群（業務用サーバー APS/APX、カートリッジ HDLH、HDLP）は
+  // 販売状況を判定する材料がないため、これまでどおり表示する
+  const NON_NAS_SELECTOR_PREFIX = /^(APS|APX|HDLH|HDLP)/;
+
+  function isSelectableModel(model) {
+    const m = String(model).toUpperCase();
+    if (discontinuedModels.has(m)) return false;
+    if (!nasDataReady) return true;
+    return activeModels.has(m) || NON_NAS_SELECTOR_PREFIX.test(m);
+  }
   let modelInfoMap = new Map();
   let nasSeriesList = null; // 「一覧から機種を選ぶ」パネル用（NASセレクターのシリーズ一覧）
   fetch("https://ioplaza02.github.io/nas-selector/data/products.json")
@@ -161,6 +177,7 @@
     .then((data) => {
       const list = data.products || [];
       nasSeriesList = list;
+      nasDataReady = list.length > 0;
       list.forEach((p) => {
         const info = { image: p.imageUrl || null, desc: p.name || null };
         const variants = p.variants || [];
@@ -170,6 +187,8 @@
           modelInfoMap.set(skuUpper, info);
           if (v.status === "生産終了" || p.status === "生産終了") {
             discontinuedModels.add(skuUpper);
+          } else {
+            activeModels.add(skuUpper);
           }
         });
       });
@@ -271,7 +290,7 @@
   function findMatches(query) {
     const q = query.trim().toUpperCase();
     if (!q) return [];
-    return allProducts.filter((p) => p.model.toUpperCase().includes(q) && !discontinuedModels.has(p.model.toUpperCase()));
+    return allProducts.filter((p) => p.model.toUpperCase().includes(q) && isSelectableModel(p.model));
   }
 
   modelInput.addEventListener("input", () => {
@@ -314,7 +333,7 @@
     suggestBox.hidden = false;
 
     // 完全一致が1件だけなら、それを即座に表示する
-    const exact = allProducts.find((p) => p.model.toUpperCase() === q.toUpperCase() && !discontinuedModels.has(p.model.toUpperCase()));
+    const exact = allProducts.find((p) => p.model.toUpperCase() === q.toUpperCase() && isSelectableModel(p.model));
     if (exact) {
       selectProduct(exact);
       if (silentSearch) suggestBox.hidden = true;
@@ -600,20 +619,58 @@
   // ---------- 絞り込み条件 ----------
 
   const filterPanel = document.querySelector(".filter-panel");
+
+  // 「保証期間延長（センドバック）」だけを選んでいるときは、HDD返却の区分がないので
+  // 「HDDの返却」をグレーアウトして選べなくする（選んでいた値は残し、他の方式を選び直すと元に戻る）
+  const hddGroup = el("#hdd-group");
+  const hddDisabledNote = el("#hdd-disabled-note");
+  function isHddFilterDisabled() {
+    const methods = Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
+    return methods.length === 1 && methods[0] === "sendback";
+  }
+  function updateHddAvailability() {
+    const disabled = isHddFilterDisabled();
+    hddGroup.classList.toggle("filter-group--disabled", disabled);
+    hddDisabledNote.hidden = !disabled;
+    filterPanel.querySelectorAll('input[name="hdd-return"]').forEach((r) => { r.disabled = disabled; });
+    el("#hdd-help-btn").disabled = disabled;
+  }
+
   filterPanel.addEventListener("change", () => {
+    updateHddAvailability();
     if (currentProduct) renderResults();
   });
+  updateHddAvailability();
+
+  // ---------- 「HDDの返却」の ? ポップアップ ----------
+  const helpModal = el("#hdd-help-modal");
+  let helpReturnFocus = null;
+  function openHelp() {
+    helpReturnFocus = document.activeElement;
+    helpModal.hidden = false;
+    el("#hdd-help-close").focus();
+  }
+  function closeHelp() {
+    helpModal.hidden = true;
+    if (helpReturnFocus) helpReturnFocus.focus();
+  }
+  el("#hdd-help-btn").addEventListener("click", (e) => { e.preventDefault(); openHelp(); });
+  el("#hdd-help-close").addEventListener("click", closeHelp);
+  helpModal.addEventListener("click", (e) => { if (e.target === helpModal) closeHelp(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !helpModal.hidden) closeHelp(); });
 
   filterReset.addEventListener("click", () => {
     filterPanel.querySelectorAll('input[name="method"]').forEach((c) => (c.checked = true));
     filterPanel.querySelector('input[name="hdd-return"][value="any"]').checked = true;
     filterPanel.querySelector('input[name="default-years"][value="5"]').checked = true;
+    updateHddAvailability();
     if (currentProduct) renderResults();
   });
 
   function getActiveFilters() {
     const methods = Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
-    const hddReturn = filterPanel.querySelector('input[name="hdd-return"]:checked').value;
+    // グレーアウト中は「指定なし」として扱う
+    const hddReturn = isHddFilterDisabled() ? "any" : filterPanel.querySelector('input[name="hdd-return"]:checked').value;
     const defaultYearsInput = filterPanel.querySelector('input[name="default-years"]:checked');
     const defaultYears = defaultYearsInput ? defaultYearsInput.value : "5";
     return { methods, hddReturn, defaultYears };
@@ -779,8 +836,11 @@
       if (!s.isOption) {
         if (!methods.includes(s.method)) return false;
       }
-      if (hddReturn === "not-required" && s.hddReturnRequired !== false) return false;
-      if (hddReturn === "required" && s.hddReturnRequired !== true) return false;
+      // センドバック（hddReturnRequired が null）には返却の区分がないので、HDD返却の条件では除外しない
+      if (s.hddReturnRequired !== null) {
+        if (hddReturn === "not-required" && s.hddReturnRequired !== false) return false;
+        if (hddReturn === "required" && s.hddReturnRequired !== true) return false;
+      }
       return true;
     });
 
