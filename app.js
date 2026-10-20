@@ -921,7 +921,9 @@
       );
     }
 
-    planGroups.innerHTML = switchHint + html;
+    // 案内文は一覧（列の並び）の外に置く。中に入れると、案内が横幅いっぱいを使うせいで
+    // 空の列が残り、カテゴリが2つしかないときに右側が空いてしまうため
+    planGroups.innerHTML = switchHint + `<div class="plan-grid">${html}</div>`;
     bindModeHint();
     bindCardEvents();
   }
