@@ -232,12 +232,19 @@
     const model = params.get("model");
     if (model) modelInput.value = model;
 
+    // methods=sendback だけならセンドバックを選んだ状態に。
+    // 以前の共有リンク（sendback と他の方式が混ざっているもの）は、訪問・お届け保守の側で開く
     const methods = params.get("methods");
     if (methods) {
       const list = methods.split(",");
-      filterPanelEl().querySelectorAll('input[name="method"]').forEach((c) => {
-        c.checked = list.includes(c.value);
-      });
+      const others = list.filter((m) => m !== "sendback");
+      if (others.length === 0 && list.includes("sendback")) {
+        filterPanelEl().querySelector('input[name="method-mode"][value="sendback"]').checked = true;
+      } else {
+        filterPanelEl().querySelectorAll('input[name="method"]').forEach((c) => {
+          c.checked = others.includes(c.value);
+        });
+      }
     }
 
     const hdd = params.get("hdd");
@@ -624,12 +631,27 @@
   // 「HDDの返却」をグレーアウトして選べなくする（選んでいた値は残し、他の方式を選び直すと元に戻る）
   const hddGroup = el("#hdd-group");
   const hddDisabledNote = el("#hdd-disabled-note");
-  function isHddFilterDisabled() {
-    const methods = Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
-    return methods.length === 1 && methods[0] === "sendback";
+  function methodMode() {
+    const r = filterPanel.querySelector('input[name="method-mode"]:checked');
+    return r ? r.value : "replace";
   }
+  function isHddFilterDisabled() {
+    return methodMode() === "sendback";
+  }
+  // センドバックを選んでいる間は、訪問・お届けの3つを薄く表示する。
+  // そのどれかを押したら、自動で「訪問・お届け保守から選ぶ」に切り替える
+  const methodSub = el("#method-sub");
+  methodSub.addEventListener("click", (e) => {
+    if (!e.target.closest(".filter-option")) return;
+    if (methodMode() === "sendback") {
+      e.preventDefault();
+      filterPanel.querySelector('input[name="method-mode"][value="replace"]').checked = true;
+      filterPanel.dispatchEvent(new Event("change"));
+    }
+  });
   function updateHddAvailability() {
     const disabled = isHddFilterDisabled();
+    methodSub.classList.toggle("filter-sub--inactive", disabled);
     hddGroup.classList.toggle("filter-group--disabled", disabled);
     hddDisabledNote.hidden = !disabled;
     filterPanel.querySelectorAll('input[name="hdd-return"]').forEach((r) => { r.disabled = disabled; });
@@ -660,6 +682,7 @@
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !helpModal.hidden) closeHelp(); });
 
   filterReset.addEventListener("click", () => {
+    filterPanel.querySelector('input[name="method-mode"][value="replace"]').checked = true;
     filterPanel.querySelectorAll('input[name="method"]').forEach((c) => (c.checked = true));
     filterPanel.querySelector('input[name="hdd-return"][value="any"]').checked = true;
     filterPanel.querySelector('input[name="default-years"][value="5"]').checked = true;
@@ -668,7 +691,9 @@
   });
 
   function getActiveFilters() {
-    const methods = Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
+    const methods = methodMode() === "sendback"
+      ? ["sendback"]
+      : Array.from(filterPanel.querySelectorAll('input[name="method"]:checked')).map((c) => c.value);
     // グレーアウト中は「指定なし」として扱う
     const hddReturn = isHddFilterDisabled() ? "any" : filterPanel.querySelector('input[name="hdd-return"]:checked').value;
     const defaultYearsInput = filterPanel.querySelector('input[name="default-years"]:checked');
@@ -733,8 +758,8 @@
     if (!meta) return;
     const d = new Date();
     const { methods, hddReturn } = getActiveFilters();
-    const methodText = methods.length === Object.keys(METHOD_LABELS).length
-      ? "すべて"
+    const methodText = methods.length === 3 && !methods.includes("sendback")
+      ? "訪問・お届け保守（すべて）"
       : methods.map((m) => METHOD_LABELS[m]).filter(Boolean).join("・") || "（選択なし）";
     meta.innerHTML = `
       <p class="print-meta__title">ISSセレクター 保守プラン一覧　出力日：${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日</p>
@@ -846,8 +871,20 @@
 
     resultCount.textContent = `${filtered.length}件のプランが対応しています`;
 
+    const hasSendback = currentProduct.services.some((s) => s.method === "sendback");
+    const sendbackMode = methodMode() === "sendback";
+
+    // 訪問・お届け保守を見ているときに、この機種にセンドバックもあれば、切り替えの案内を出す
+    const switchHint = !sendbackMode && hasSendback
+      ? `<div class="mode-hint">この機種には<strong>保証期間延長（センドバック）</strong>もあります。<button type="button" class="link-btn" data-role="to-sendback">センドバックに切り替えて見る</button></div>`
+      : "";
+
     if (filtered.length === 0) {
-      planGroups.innerHTML = `<div class="no-match">条件に一致する保守プランがありませんでした。絞り込み条件を緩めてみてください。</div>`;
+      const msg = sendbackMode && !hasSendback
+        ? "この機種には、保証期間延長（センドバック）のプランはありません。左の「保守の方式」で「訪問・お届け保守から選ぶ」に切り替えてください。"
+        : "条件に一致する保守プランがありませんでした。絞り込み条件を緩めてみてください。";
+      planGroups.innerHTML = switchHint + `<div class="no-match">${msg}</div>`;
+      bindModeHint();
       return;
     }
 
@@ -884,7 +921,8 @@
       );
     }
 
-    planGroups.innerHTML = html;
+    planGroups.innerHTML = switchHint + html;
+    bindModeHint();
     bindCardEvents();
   }
 
@@ -1056,6 +1094,15 @@
           </div>
         </div>
       </div>`;
+  }
+
+  function bindModeHint() {
+    const btn = planGroups.querySelector('[data-role="to-sendback"]');
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      filterPanel.querySelector('input[name="method-mode"][value="sendback"]').checked = true;
+      filterPanel.dispatchEvent(new Event("change"));
+    });
   }
 
   function bindCardEvents() {

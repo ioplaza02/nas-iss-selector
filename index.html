@@ -79,10 +79,15 @@
     <details class="filter-group" open>
       <summary class="filter-group__label">保守の方式</summary>
       <div class="filter-group__body">
-        <label class="filter-option"><input type="checkbox" name="method" value="onsite" checked> 訪問安心保守（オンサイト・スタッフが訪問）</label>
-        <label class="filter-option"><input type="checkbox" name="method" value="onsite_sameday" checked> 当日訪問プラン（オンサイトの上位プラン）</label>
-        <label class="filter-option"><input type="checkbox" name="method" value="delivery" checked> 交換品お届け保守（デリバリィ・自分で交換）</label>
-        <label class="filter-option"><input type="checkbox" name="method" value="sendback" checked> 保証期間延長（センドバック）</label>
+        <!-- 「訪問・お届け保守」と「保証期間延長（センドバック）」はどちらか一方を選ぶ。
+             センドバックにはHDD返却の区分がないため、混ぜて選べないようにしている -->
+        <label class="filter-option filter-option--mode"><input type="radio" name="method-mode" value="replace" checked> 訪問・お届け保守から選ぶ</label>
+        <div class="filter-sub" id="method-sub">
+          <label class="filter-option"><input type="checkbox" name="method" value="onsite" checked> 訪問安心保守（オンサイト・スタッフが訪問）</label>
+          <label class="filter-option"><input type="checkbox" name="method" value="onsite_sameday" checked> 当日訪問プラン（オンサイトの上位プラン）</label>
+          <label class="filter-option"><input type="checkbox" name="method" value="delivery" checked> 交換品お届け保守（デリバリィ・自分で交換）</label>
+        </div>
+        <label class="filter-option filter-option--mode"><input type="radio" name="method-mode" value="sendback"> 保証期間延長（センドバック）</label>
       </div>
     </details>
 

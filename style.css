@@ -1208,3 +1208,29 @@ details.filter-group[open] { padding-bottom: 14px; }
 .help-modal__links a:hover { background: var(--accent); color: #fff; }
 
 @media print { .help-modal { display: none !important; } }
+
+/* ---------- 保守の方式：「訪問・お届け保守」と「センドバック」はどちらか一方 ---------- */
+.filter-option--mode { font-weight: 700; }
+.filter-sub {
+  margin: 0 0 6px 10px;
+  padding-left: 12px;
+  border-left: 2px solid #ecd9c2;
+  transition: opacity .2s, border-color .2s;
+}
+.filter-sub--inactive { opacity: .45; border-left-color: var(--line); }
+.filter-sub--inactive .filter-option:hover { background: none; transform: none; }
+
+/* 結果の上の「この機種にはセンドバックもあります」案内（2列の並びをまたいで横いっぱいに出す） */
+.mode-hint, #plan-groups > .no-match { grid-column: 1 / -1; }
+.mode-hint {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #3f4650;
+  background: #f1efe9;
+  border: 1px solid #e3ded1;
+  border-radius: 12px;
+  animation: isFade .5s both;
+}
+.mode-hint strong { color: #3b2a14; }
+.mode-hint .link-btn { margin-left: 6px; }
+@media print { .mode-hint { display: none !important; } }
